@@ -1,6 +1,6 @@
-# ExampleMod
+# Derendered
 
-![](https://cf.way2muchnoise.eu/short_example_mod.svg)
-![](https://img.shields.io/modrinth/dt/example_mod)
-![](https://img.shields.io/github/v/release/toapuro/custom-mdk)
+![](https://cf.way2muchnoise.eu/short_derendered.svg)
+![](https://img.shields.io/modrinth/dt/derendered)
+![](https://img.shields.io/github/v/release/toapuro/derendered)
 

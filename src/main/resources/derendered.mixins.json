@@ -1,9 +1,9 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "io.github.toapuro.examplemod.mixin",
+  "package": "io.github.toapuro.derendered.mixin",
   "compatibilityLevel": "JAVA_17",
-  "refmap": "examplemod.refmap.json",
+  "refmap": "derendered.refmap.json",
   "mixins": [
   ],
   "client": [

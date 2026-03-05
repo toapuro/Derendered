@@ -150,11 +150,11 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-//    // Mixin Extras
-//    compileOnly(annotationProcessor(libs.mixinExtrasCommon.get())!!)
-//    implementation(jarJar(libs.mixinExtrasForge.get())) {
-//        jarJar.ranged(this, libs.versions.mixinExtrasRange)
-//    }
+//    Mixin Extras
+    compileOnly(annotationProcessor(libs.mixinExtrasCommon.get())!!)
+    implementation(jarJar(libs.mixinExtrasForge.get())) {
+        jarJar.ranged(this, libs.versions.mixinExtrasRange)
+    }
 
     // Default Dependencies
     runtimeOnly(fg.deobf(deps.catalogue))

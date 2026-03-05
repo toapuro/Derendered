@@ -133,6 +133,12 @@ repositories {
             includeGroup("curse.maven")
         }
     }
+
+    // Cloth Config
+    maven {
+        name = "Shedaniel Maven"
+        url = uri("https://maven.shedaniel.me/")
+    }
 }
 
 dependencies {
@@ -158,6 +164,7 @@ dependencies {
     runtimeOnly(fg.deobf(deps.jeiIntegration))
 
     // Mod Dependencies
+    implementation(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
 }
 
 tasks.test {

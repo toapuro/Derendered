@@ -1,4 +1,4 @@
-package io.github.toapuro.derendered.mixin.optimization;
+package io.github.toapuro.derendered.mixin.particleInstancing;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.mojang.blaze3d.vertex.VertexBuffer;

@@ -1,8 +1,10 @@
-package io.github.toapuro.derendered.api.render;
+package io.github.toapuro.derendered.api.render.particleInstancing;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+import io.github.toapuro.derendered.api.render.particleInstancing.DivisorVertexFormat.VertexAttributeKey;
 
 import static com.mojang.blaze3d.vertex.DefaultVertexFormat.*;
 
@@ -10,7 +12,13 @@ public class ParticleVertexFormat {
     public static final VertexFormatElement ELEMENT_INSTANCE_POS = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
     public static final VertexFormatElement ELEMENT_QUATERNION = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
 
-    public static final VertexFormat PARTICLE_INSTANCED = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+    public static final VertexFormat PARTICLE_VBO = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+            .put("Position", ELEMENT_POSITION)
+            .put("UV0", ELEMENT_UV0)
+            .put("Color", ELEMENT_COLOR)
+            .build());
+
+    public static final VertexFormat PARTICLE_FULL = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
             .put("Position", ELEMENT_POSITION)
             .put("UV0", ELEMENT_UV0)
             .put("Color", ELEMENT_COLOR)
@@ -19,15 +27,15 @@ public class ParticleVertexFormat {
             .put("Quaternion", ELEMENT_QUATERNION)
             .build());
 
-    public static final VertexFormat PARTICLE_INSTANCED_EXTRAS = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+    public static final VertexFormat PARTICLE_ARRAY = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
             .put("UV2", ELEMENT_UV2) // packedLight
             .put("InstancePos", ELEMENT_INSTANCE_POS)
             .put("Quaternion", ELEMENT_QUATERNION)
             .build());
 
-    public static final DivisorVertexFormat PARTICLE_INSTANCED_EXTRAS_DIVS = new DivisorVertexFormat(ImmutableMap.<VertexFormatElement, Integer>builder()
-            .put(ELEMENT_UV2, 0)
-            .put(ELEMENT_INSTANCE_POS, 0)
-            .put(ELEMENT_QUATERNION, 0)
+    public static final DivisorVertexFormat PARTICLE_ARRAY_DIVS = new DivisorVertexFormat(ImmutableList.<VertexAttributeKey>builder()
+            .add(VertexAttributeKey.of(ELEMENT_UV2, 0, 1))
+            .add(VertexAttributeKey.of(ELEMENT_INSTANCE_POS, 1, 1))
+            .add(VertexAttributeKey.of(ELEMENT_QUATERNION, 2, 1))
             .build());
 }

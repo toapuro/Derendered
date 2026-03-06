@@ -24,6 +24,10 @@ public class GpuBuffer {
         GlStateManager._glBindBuffer(target, this.bufferId);
     }
 
+    public void release() {
+        GlStateManager._glDeleteBuffers(this.bufferId);
+    }
+
     @OnlyIn(Dist.CLIENT)
     @Getter
     public enum Usage {

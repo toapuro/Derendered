@@ -1,6 +1,5 @@
 package io.github.toapuro.derendered.mixin.particleinstancing;
 
-import com.google.common.collect.ImmutableList;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -29,8 +28,10 @@ import java.util.*;
 public class MixinParticleEngine {
 
     @Shadow(remap = true)
-    @Final
-    private TextureManager textureManager;
+    @Final private TextureManager textureManager;
+
+    @Shadow(remap = true)
+    @Final private Map<ParticleRenderType, Queue<Particle>> particles;
 
     @Unique
     private final InstancedBufferStack derendered$instancedBuffer = new InstancedBufferStack(Tesselator.getInstance().getBuilder());
@@ -47,23 +48,42 @@ public class MixinParticleEngine {
             return particles;
         }
 
-        ImmutableList.Builder<Particle> unInstancedParticles = ImmutableList.builder();
-        Map<Integer, List<IInstancedParticle>> batchMap = new HashMap<>();
+        List<Particle> fallbackParticles = new ArrayList<>();
+        Map<Integer, List<IInstancedParticle>> preBatchMap = new HashMap<>();
 
+        // Particle batching
         for (Particle particle : particles) {
-            if(particle instanceof IInstancedParticle instancedParticle && instancedParticle.derendered$isVisible()) {
-                if (clippingHelper != null && particle.shouldCull() && !clippingHelper.isVisible(particle.getBoundingBox())) continue;
-
-                batchMap.computeIfAbsent(instancedParticle.derendered$getBatchHash(), integer -> new ArrayList<>())
+            if (particle instanceof IInstancedParticle instancedParticle
+                    && instancedParticle.derendered$isVisible()
+                    && (clippingHelper == null || !particle.shouldCull() || clippingHelper.isVisible(particle.getBoundingBox()))) {
+                preBatchMap
+                        .computeIfAbsent(instancedParticle.derendered$getBatchHash(), k -> new ArrayList<>())
                         .add(instancedParticle);
             } else {
-                unInstancedParticles.add(particle);
+                fallbackParticles.add(particle);
             }
         }
+
+        Queue<Particle> particleQueue = this.particles.get(particleRenderType);
+
+        int minimumBatchSize = (int) (particleQueue.size() * 0.05);
+
+        // Fallback small batches
+        Map<Integer, List<IInstancedParticle>> batchMap = new HashMap<>();
+        preBatchMap.forEach((hash, batchParticles) -> {
+            if (batchParticles.size() >= minimumBatchSize) {
+                batchMap.put(hash, batchParticles);
+            } else {
+                fallbackParticles.addAll(batchParticles.stream()
+                        .map(IInstancedParticle::self)
+                        .toList());
+            }
+        });
 
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
 
+        // Rendering
         for (List<IInstancedParticle> batchParticles : batchMap.values()) {
             RenderResult result = InstancedParticleEngine.render(batchParticles, bufferbuilder, derendered$instancedBuffer, particleRenderType, activeRenderInfo, textureManager, partialTicks);
 
@@ -73,6 +93,6 @@ public class MixinParticleEngine {
             }
         }
 
-        return unInstancedParticles.build();
+        return fallbackParticles;
     }
 }

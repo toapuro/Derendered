@@ -3,9 +3,9 @@ package io.github.toapuro.derendered.mixin.particleinstancing;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.toapuro.derendered.api.config.PreloadOption;
 import io.github.toapuro.derendered.api.mixin.RequirePreloadOption;
-import io.github.toapuro.derendered.api.render.instancing.particle.IInstancedParticle;
-import io.github.toapuro.derendered.api.render.instancing.InstancedBufferBuilder;
+import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleBufferBuilder;
 import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
+import io.github.toapuro.derendered.api.render.instancing.particle.IInstancedParticle;
 import io.github.toapuro.derendered.api.render.instancing.particle.ParticleVertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -19,8 +19,6 @@ import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-
-import java.util.Objects;
 
 @RequirePreloadOption(PreloadOption.PARTICLE_INSTANCING)
 @Mixin(SingleQuadParticle.class)
@@ -46,36 +44,53 @@ public abstract class SingleQuadParticleMixin extends Particle implements IInsta
     }
 
     @Override
+    public boolean derendered$isVisible() {
+        return this.alpha > 0.0f;
+    }
+
+    @Override
     public int derendered$getBatchHash() {
-        return Objects.hash(getU0(), getU1(), getV0(), getV1());
+        int h = Float.floatToIntBits(getU0());
+        h = 31 * h + Float.floatToIntBits(getU1());
+        h = 31 * h + Float.floatToIntBits(getV0());
+        h = 31 * h + Float.floatToIntBits(getV1());
+
+        h = 31 * h + Float.floatToIntBits(rCol);
+        h = 31 * h + Float.floatToIntBits(gCol);
+        h = 31 * h + Float.floatToIntBits(bCol);
+        return h;
     }
 
     /// [SingleQuadParticle#render(VertexConsumer,Camera,float)]
     @Unique
     @Override
-    public void derendered$renderInstance(InstancedBufferStack bufferStack, ParticleRenderType renderType, Camera renderInfo, float pPartialTicks) {
+    public void derendered$renderInstance(InstancedBufferStack bufferStack, ParticleRenderType renderType, Camera renderInfo, float partialTicks) {
         Vec3 vec3 = renderInfo.getPosition();
-        float offsetX = (float)(Mth.lerp(pPartialTicks, this.xo, this.x) - vec3.x());
-        float offsetY = (float)(Mth.lerp(pPartialTicks, this.yo, this.y) - vec3.y());
-        float offsetZ = (float)(Mth.lerp(pPartialTicks, this.zo, this.z) - vec3.z());
+        float offsetX = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
+        float offsetY = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
+        float offsetZ = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
 
         Quaternionf quaternion = new Quaternionf(renderInfo.rotation());
-        quaternion.rotateZ(Mth.lerp(pPartialTicks, this.oRoll, this.roll));
+        quaternion.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
 
-        int lightColor = this.getLightColor(pPartialTicks);
+        int lightColor = this.getLightColor(partialTicks);
 
         bufferStack.expectFormat(ParticleVertexFormat.PARTICLE_ARRAY, ParticleVertexFormat.PARTICLE_ARRAY_DIVS);
 
-        InstancedBufferBuilder instance = bufferStack.instanceBuilder();
+        InstancedParticleBufferBuilder instance = bufferStack.instanceBuilder();
 
         /// {@link ParticleVertexFormat#PARTICLE_ARRAY}
 
         // UV2 location=0 2s
         instance.uv2(lightColor);
-        // InstancePos location=1 3f
+        // Alpha location=1 1f
+        instance.alpha(alpha);
+        // InstancePos location=2 3f
         instance.instancedPos(offsetX, offsetY, offsetZ);
-        // Quaternion location=2 4f
+        // Quaternion location=3 4f
         instance.quaternion(quaternion);
+        // Size location=4 1f
+        instance.size(getQuadSize(partialTicks));
 
         instance.endVertex();
     }
@@ -86,22 +101,25 @@ public abstract class SingleQuadParticleMixin extends Particle implements IInsta
         Quaternionf quaternionf;
         quaternionf = renderInfo.rotation();
 
-        Vector3f[] positionVec = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
-        float quadSize = this.getQuadSize(partialTicks);
+        Vector3f[] positionVec = new Vector3f[] {
+                new Vector3f(-1.0F, -1.0F, 0.0F),
+                new Vector3f(-1.0F, 1.0F, 0.0F),
+                new Vector3f(1.0F, 1.0F, 0.0F),
+                new Vector3f(1.0F, -1.0F, 0.0F)
+        };
 
         for(int i = 0; i < 4; ++i) {
             Vector3f position = positionVec[i];
             position.rotate(quaternionf);
-            position.mul(quadSize);
         }
 
         float u0 = this.getU0();
         float u1 = this.getU1();
         float v0 = this.getV0();
         float v1 = this.getV1();
-        buffer.vertex(positionVec[0].x(), positionVec[0].y(), positionVec[0].z()).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).endVertex();
-        buffer.vertex(positionVec[1].x(), positionVec[1].y(), positionVec[1].z()).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).endVertex();
-        buffer.vertex(positionVec[2].x(), positionVec[2].y(), positionVec[2].z()).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).endVertex();
-        buffer.vertex(positionVec[3].x(), positionVec[3].y(), positionVec[3].z()).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).endVertex();
+        buffer.vertex(positionVec[0].x(), positionVec[0].y(), positionVec[0].z()).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
+        buffer.vertex(positionVec[1].x(), positionVec[1].y(), positionVec[1].z()).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
+        buffer.vertex(positionVec[2].x(), positionVec[2].y(), positionVec[2].z()).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
+        buffer.vertex(positionVec[3].x(), positionVec[3].y(), positionVec[3].z()).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
     }
 }

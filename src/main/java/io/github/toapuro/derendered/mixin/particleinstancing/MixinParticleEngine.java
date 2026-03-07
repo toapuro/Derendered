@@ -45,8 +45,9 @@ public class MixinParticleEngine {
         Map<Integer, List<IInstancedParticle>> batchMap = new HashMap<>();
 
         for (Particle particle : particles) {
-            if(particle instanceof IInstancedParticle instancedParticle) {
+            if(particle instanceof IInstancedParticle instancedParticle && instancedParticle.derendered$isVisible()) {
                 if (clippingHelper != null && particle.shouldCull() && !clippingHelper.isVisible(particle.getBoundingBox())) continue;
+
                 batchMap.computeIfAbsent(instancedParticle.derendered$getBatchHash(), integer -> new ArrayList<>())
                         .add(instancedParticle);
             } else {

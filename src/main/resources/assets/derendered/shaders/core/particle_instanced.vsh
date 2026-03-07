@@ -6,8 +6,10 @@ in vec3 Position;
 in vec2 UV0;
 in vec4 Color;
 in ivec2 UV2;
+in float Alpha;
 in vec3 InstancePos;
 in vec4 QuaternionMat;
+in float Size;
 
 uniform sampler2D Sampler2;
 
@@ -20,11 +22,12 @@ out vec2 texCoord0;
 out vec4 vertexColor;
 
 void main() {
-    vec3 vecPosition = Position + InstancePos;
+    vec3 vecPosition = (Position * Size) + InstancePos;
 
     gl_Position = ProjMat * ModelViewMat * vec4(vecPosition, 1.0);
 
     vertexDistance = fog_distance(ModelViewMat, vecPosition, FogShape);
     texCoord0 = UV0;
     vertexColor = Color * texelFetch(Sampler2, UV2 / 16, 0);
+    vertexColor.a *= Alpha;
 }

@@ -7,6 +7,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 
 public interface IInstancedParticle {
 
+    boolean derendered$isVisible();
     /**
      * Hash for batching
      */

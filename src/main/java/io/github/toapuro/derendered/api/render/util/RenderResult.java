@@ -5,8 +5,12 @@ public enum RenderResult {
     PASS,
     FAILURE;
 
-    public boolean successful() {
+    public boolean success() {
         return this == SUCCESS;
+    }
+
+    public boolean pass() {
+        return this == SUCCESS || this == PASS;
     }
 
     public boolean failure() {

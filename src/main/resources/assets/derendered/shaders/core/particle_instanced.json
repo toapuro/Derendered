@@ -11,8 +11,10 @@
     "UV0",
     "Color",
     "UV2",
+    "Alpha",
     "InstancePos",
-    "QuaternionMat"
+    "QuaternionMat",
+    "Size"
   ],
   "samplers": [
     { "name": "Sampler0" },

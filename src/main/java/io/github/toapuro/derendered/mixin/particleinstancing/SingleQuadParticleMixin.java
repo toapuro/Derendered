@@ -1,11 +1,9 @@
 package io.github.toapuro.derendered.mixin.particleinstancing;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import io.github.toapuro.derendered.api.config.PreloadOption;
-import io.github.toapuro.derendered.api.mixin.RequirePreloadOption;
-import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleBufferBuilder;
 import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
 import io.github.toapuro.derendered.api.render.instancing.particle.IInstancedParticle;
+import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleBufferBuilder;
 import io.github.toapuro.derendered.api.render.instancing.particle.ParticleVertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -20,7 +18,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-@RequirePreloadOption(PreloadOption.PARTICLE_INSTANCING)
 @Mixin(SingleQuadParticle.class)
 public abstract class SingleQuadParticleMixin extends Particle implements IInstancedParticle {
 

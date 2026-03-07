@@ -9,11 +9,13 @@ public class ModConfigLoader {
     private ConfigHolder<ModConfig> configHolder;
 
     public ConfigHolder<ModConfig> getConfigHolder() {
-        if(configHolder != null) {
-            return configHolder;
-        }
+        ensureLoaded();
+        return configHolder;
+    }
 
-        ConfigHolder<ModConfig> holder = AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
-        return (configHolder = holder);
+    public void ensureLoaded() {
+        if(configHolder == null) {
+            configHolder = AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
+        }
     }
 }

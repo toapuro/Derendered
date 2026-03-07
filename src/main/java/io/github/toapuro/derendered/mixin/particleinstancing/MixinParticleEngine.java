@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tesselator;
+import io.github.toapuro.derendered.api.config.ModConfig;
+import io.github.toapuro.derendered.api.config.RuntimeOption;
 import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
 import io.github.toapuro.derendered.api.render.instancing.particle.IInstancedParticle;
 import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleEngine;
@@ -40,6 +42,10 @@ public class MixinParticleEngine {
                                      @Local(argsOnly = true) Camera activeRenderInfo,
                                      @Local(argsOnly = true) float partialTicks,
                                      @Local ParticleRenderType particleRenderType) {
+
+        if(!ModConfig.get().isRuntimeOptionEnabled(RuntimeOption.PARTICLE_INSTANCING)) {
+            return particles;
+        }
 
         ImmutableList.Builder<Particle> unInstancedParticles = ImmutableList.builder();
         Map<Integer, List<IInstancedParticle>> batchMap = new HashMap<>();

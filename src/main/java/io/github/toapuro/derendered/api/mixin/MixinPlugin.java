@@ -53,7 +53,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 
             for (PreloadOption option : options) {
-                ModConfig modConfig = ModConfig.LOADER.getConfigHolder().getConfig();
+                ModConfig modConfig = ModConfig.get();
                 if(!modConfig.isPreloadOptionEnabled(option)) {
                     return false;
                 }
@@ -76,7 +76,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
         return Stream.empty();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "SameParameterValue"})
     static <T> T getAnnotationValue(AnnotationNode node, String key) {
         if (node.values == null) return null;
         for (int head = 0; head < node.values.size(); head += 2) {

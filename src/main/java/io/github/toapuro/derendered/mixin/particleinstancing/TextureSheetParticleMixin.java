@@ -7,9 +7,11 @@ import io.github.toapuro.derendered.api.render.instancing.particle.InstancedPart
 import io.github.toapuro.derendered.api.render.instancing.particle.ParticleVertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -18,25 +20,18 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(SingleQuadParticle.class)
-public abstract class SingleQuadParticleMixin extends Particle implements IInstancedParticle {
+@Mixin(TextureSheetParticle.class)
+public abstract class TextureSheetParticleMixin extends SingleQuadParticle implements IInstancedParticle {
+
+    @Shadow protected abstract float getU0();
+    @Shadow protected abstract float getU1();
+    @Shadow protected abstract float getV0();
+    @Shadow protected abstract float getV1();
 
     @Shadow
-    protected abstract float getU0();
+    protected TextureAtlasSprite sprite;
 
-    @Shadow
-    protected abstract float getU1();
-
-    @Shadow
-    protected abstract float getV0();
-
-    @Shadow
-    protected abstract float getV1();
-
-    @Shadow
-    public abstract float getQuadSize(float pScaleFactor);
-
-    protected SingleQuadParticleMixin(ClientLevel pLevel, double pX, double pY, double pZ) {
+    protected TextureSheetParticleMixin(ClientLevel pLevel, double pX, double pY, double pZ) {
         super(pLevel, pX, pY, pZ);
     }
 
@@ -45,16 +40,21 @@ public abstract class SingleQuadParticleMixin extends Particle implements IInsta
         return this.alpha > 0.0f;
     }
 
+    @SuppressWarnings("resource")
     @Override
-    public int derendered$getBatchHash() {
-        int h = Float.floatToIntBits(getU0());
-        h = 31 * h + Float.floatToIntBits(getU1());
-        h = 31 * h + Float.floatToIntBits(getV0());
-        h = 31 * h + Float.floatToIntBits(getV1());
+    public int derendered$getBatchHash(TextureAtlas textureAtlas) {
+        float uvTolerance = 0.01f;
+        float colorTolerance = 0.02f;
 
-        h = 31 * h + Float.floatToIntBits(rCol);
-        h = 31 * h + Float.floatToIntBits(gCol);
-        h = 31 * h + Float.floatToIntBits(bCol);
+        int h =      sprite.contents().name().hashCode();
+        h = 31 * h + Float.floatToIntBits((int) ((getU0() - sprite.getU0()) / sprite.contents().width() / uvTolerance));
+        h = 31 * h + Float.floatToIntBits((int) ((getU1() - sprite.getU0()) / sprite.contents().width() / uvTolerance));
+        h = 31 * h + Float.floatToIntBits((int) ((getV0() - sprite.getV0()) / sprite.contents().height() / uvTolerance));
+        h = 31 * h + Float.floatToIntBits((int) ((getV1() - sprite.getV0()) / sprite.contents().height() / uvTolerance));
+
+        h = 31 * h + Float.floatToIntBits((int) rCol / colorTolerance);
+        h = 31 * h + Float.floatToIntBits((int) gCol / colorTolerance);
+        h = 31 * h + Float.floatToIntBits((int) bCol / colorTolerance);
         return h;
     }
 

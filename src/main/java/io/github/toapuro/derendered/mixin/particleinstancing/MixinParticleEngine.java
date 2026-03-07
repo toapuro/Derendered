@@ -14,6 +14,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +33,9 @@ public class MixinParticleEngine {
 
     @Shadow(remap = true)
     @Final private Map<ParticleRenderType, Queue<Particle>> particles;
+
+    @Shadow(remap = true)
+    @Final private TextureAtlas textureAtlas;
 
     @Unique
     private final InstancedBufferStack derendered$instancedBuffer = new InstancedBufferStack(Tesselator.getInstance().getBuilder());
@@ -57,7 +61,7 @@ public class MixinParticleEngine {
                     && instancedParticle.derendered$isVisible()
                     && (clippingHelper == null || !particle.shouldCull() || clippingHelper.isVisible(particle.getBoundingBox()))) {
                 preBatchMap
-                        .computeIfAbsent(instancedParticle.derendered$getBatchHash(), k -> new ArrayList<>())
+                        .computeIfAbsent(instancedParticle.derendered$getBatchHash(textureAtlas), k -> new ArrayList<>())
                         .add(instancedParticle);
             } else {
                 fallbackParticles.add(particle);
@@ -79,6 +83,10 @@ public class MixinParticleEngine {
                         .toList());
             }
         });
+
+        if(preBatchMap.isEmpty()) {
+            return particles;
+        }
 
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tesselator.getBuilder();

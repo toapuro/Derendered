@@ -5,6 +5,7 @@ import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 
 public interface IInstancedParticle {
 
@@ -12,7 +13,7 @@ public interface IInstancedParticle {
     /**
      * Hash for batching
      */
-    int derendered$getBatchHash();
+    int derendered$getBatchHash(TextureAtlas textureAtlas);
 
     /**
      * Write to VBO

@@ -10,7 +10,7 @@
   ],
   "client": [
     "particleinstancing.MixinVertexBuffer",
-    "particleinstancing.SingleQuadParticleMixin"
+    "particleinstancing.TextureSheetParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

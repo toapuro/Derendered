@@ -1,10 +1,11 @@
-package io.github.toapuro.derendered.api.render.particleInstancing;
+package io.github.toapuro.derendered.api.render.instancing.particle;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-import io.github.toapuro.derendered.api.render.particleInstancing.DivisorVertexFormat.VertexAttributeKey;
+import io.github.toapuro.derendered.api.render.instancing.DivisorVertexFormat;
+import io.github.toapuro.derendered.api.render.instancing.DivisorVertexFormat.VertexAttributeKey;
 
 import static com.mojang.blaze3d.vertex.DefaultVertexFormat.*;
 

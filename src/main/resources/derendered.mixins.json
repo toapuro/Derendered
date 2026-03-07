@@ -6,11 +6,11 @@
   "refmap": "derendered.refmap.json",
   "plugin": "io.github.toapuro.derendered.api.mixin.MixinPlugin",
   "mixins": [
-    "particleInstancing.MixinParticleEngine"
+    "particleinstancing.MixinParticleEngine"
   ],
   "client": [
-    "particleInstancing.MixinVertexBuffer",
-    "particleInstancing.SingleQuadParticleMixin"
+    "particleinstancing.MixinVertexBuffer",
+    "particleinstancing.SingleQuadParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

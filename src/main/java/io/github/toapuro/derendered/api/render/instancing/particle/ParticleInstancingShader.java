@@ -1,4 +1,4 @@
-package io.github.toapuro.derendered.api.render.particleInstancing;
+package io.github.toapuro.derendered.api.render.instancing.particle;
 
 import io.github.toapuro.derendered.Derendered;
 import io.github.toapuro.derendered.api.render.shader.ShaderHolder;

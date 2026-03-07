@@ -1,4 +1,4 @@
-package io.github.toapuro.derendered.api.render.particleInstancing;
+package io.github.toapuro.derendered.api.render.instancing;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;

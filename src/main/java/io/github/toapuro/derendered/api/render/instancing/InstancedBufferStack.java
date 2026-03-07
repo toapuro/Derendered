@@ -1,9 +1,8 @@
-package io.github.toapuro.derendered.api.render.particleInstancing;
+package io.github.toapuro.derendered.api.render.instancing;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.toapuro.derendered.api.context.MixinContexts;
@@ -20,15 +19,17 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class InstancedBufferStack {
 
-    private final InstancedBufferBuilder instanceBuffer = new InstancedBufferBuilder(256);
+    private final InstancedBufferBuilder instanceBuilder = new InstancedBufferBuilder(256);
     private final GpuBuffer instanceVBO = new GpuBuffer(GpuBuffer.Usage.DYNAMIC);
+    private VertexFormat instanceFormat = null;
+    private DivisorVertexFormat divisorFormat = null;
+    private boolean building = false;
+
     private final BufferBuilder vboBuilder;
-    private VertexFormat instanceFormat;
-    private DivisorVertexFormat divisorFormat;
-    private boolean building;
 
     public void beginInstance(VertexFormat.Mode mode, VertexFormat instanceFormat, DivisorVertexFormat divisorFormat) {
-        instanceBuffer.begin(mode, instanceFormat);
+        instanceBuilder.begin(mode, instanceFormat);
+
         this.instanceFormat = instanceFormat;
         this.divisorFormat = divisorFormat;
         this.building = true;
@@ -39,12 +40,11 @@ public class InstancedBufferStack {
         Preconditions.checkArgument(this.divisorFormat == divisorFormat, "Divisor vertex format does not match");
     }
 
-    public void flush(PoseStack poseStack, Matrix4f projectionMatrix) {
-        ensureRendering();
+    public void flush(Matrix4f modelViewMatrix, Matrix4f projectionMatrix) {
+        ensureBuilding();
 
         ShaderInstance shader = RenderSystem.getShader();
         if(shader == null) throw new IllegalStateException("Shader instance must not be null");
-        VertexFormat shaderFormat = shader.getVertexFormat();
 
         vboBuilder.setQuadSorting(RenderSystem.getVertexSorting());
 
@@ -54,7 +54,7 @@ public class InstancedBufferStack {
         VertexFormat vboFormat = vboRenderedState.format();
         VertexFormat.Mode vboMode = vboRenderedState.mode();
 
-        BufferBuilder.RenderedBuffer instanceRendered = instanceBuffer.end();
+        BufferBuilder.RenderedBuffer instanceRendered = instanceBuilder.end();
         BufferBuilder.DrawState instanceState = instanceRendered.drawState();
 
         VertexBuffer vboBuffer = vboFormat.getImmediateDrawVertexBuffer();
@@ -63,8 +63,7 @@ public class InstancedBufferStack {
         vboBuffer.bind();
 
         {
-            // Bind VBO
-            // Upload VBO & EBO
+            // Bind and Upload VBO & EBO
             vboBuffer.upload(vboRendered);
 
             // Setup VBO Attribute
@@ -74,21 +73,23 @@ public class InstancedBufferStack {
         {
             // Bind Instance VBO
             instanceVBO.bind(GL15.GL_ARRAY_BUFFER);
+
+            // Upload Instance VBO
             instanceVBO.upload(GL15.GL_ARRAY_BUFFER, instanceRendered.vertexBuffer());
 
             int indexOffset = vboFormat.getElements().size();
 
-            // Setup Instance VBO Attribute (with offset)
+            // Setup Instance VBO Attributes (with offset)
             VertexFormatUtil.setupBufferState(instanceFormat, indexOffset);
 
-            // Setup Attribute Divisor
+            // Setup Attribute Divisor (with offset)
             divisorFormat.setup(instanceFormat, indexOffset);
         }
 
-        try(var frame = MixinContexts.GL_DRAW_FUNCTION.open(vbo ->
+        try(var ignored = MixinContexts.GL_DRAW_FUNCTION.open(vbo ->
                 GL31.glDrawElementsInstanced(vboMode.asGLMode, vboRenderedState.indexCount(), vboRenderedState.indexType().asGLType, 0L, instanceState.vertexCount())
         )) {
-            vboBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, Objects.requireNonNull(RenderSystem.getShader()));
+            vboBuffer.drawWithShader(modelViewMatrix, projectionMatrix, Objects.requireNonNull(RenderSystem.getShader()));
         }
 
         VertexBuffer.unbind();
@@ -101,17 +102,17 @@ public class InstancedBufferStack {
         this.building = false;
     }
 
-    public void ensureRendering() {
+    public void ensureBuilding() {
         if (!this.building || !vboBuilder.building()) {
-            throw new IllegalStateException("Not rendering!");
+            throw new IllegalStateException("Not building!");
         }
     }
 
-    public BufferBuilder builder() {
-        return vboBuilder;
+    public InstancedBufferBuilder instanceBuilder() {
+        return instanceBuilder;
     }
 
-    public InstancedBufferBuilder instance() {
-        return instanceBuffer;
+    public BufferBuilder vboBuilder() {
+        return vboBuilder;
     }
 }

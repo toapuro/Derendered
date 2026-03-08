@@ -6,6 +6,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public interface IInstancedParticle {
 
@@ -19,6 +20,11 @@ public interface IInstancedParticle {
      * Write to VBO
      */
     void derendered$renderVBOSingle(VertexConsumer buffer, Camera renderInfo, float partialTicks);
+
+    /**
+     * Get TextureAtlasSprite
+     */
+    TextureAtlasSprite derendered$getSprite();
 
     /**
      * Write to Instance VBO

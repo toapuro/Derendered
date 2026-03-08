@@ -5,6 +5,7 @@ import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
 import io.github.toapuro.derendered.api.render.instancing.particle.IInstancedParticle;
 import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleBufferBuilder;
 import io.github.toapuro.derendered.api.render.instancing.particle.ParticleVertexFormat;
+import io.github.toapuro.derendered.api.render.util.TextureAtlasSpriteUtil;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
@@ -43,19 +44,15 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
     @SuppressWarnings("resource")
     @Override
     public int derendered$getBatchHash(TextureAtlas textureAtlas) {
-        float uvTolerance = 0.01f;
-        float colorTolerance = 0.02f;
-
-        int h =      sprite.contents().name().hashCode();
-        h = 31 * h + Float.floatToIntBits((int) ((getU0() - sprite.getU0()) / sprite.contents().width() / uvTolerance));
-        h = 31 * h + Float.floatToIntBits((int) ((getU1() - sprite.getU0()) / sprite.contents().width() / uvTolerance));
-        h = 31 * h + Float.floatToIntBits((int) ((getV0() - sprite.getV0()) / sprite.contents().height() / uvTolerance));
-        h = 31 * h + Float.floatToIntBits((int) ((getV1() - sprite.getV0()) / sprite.contents().height() / uvTolerance));
-
-        h = 31 * h + Float.floatToIntBits((int) rCol / colorTolerance);
-        h = 31 * h + Float.floatToIntBits((int) gCol / colorTolerance);
-        h = 31 * h + Float.floatToIntBits((int) bCol / colorTolerance);
+        int h = getLightColor(0);
+        h = h * 32 + textureAtlas.getId();
+        h = h * 32 + sprite.contents().name().hashCode();
         return h;
+    }
+
+    @Override
+    public TextureAtlasSprite derendered$getSprite() {
+        return sprite;
     }
 
     /// [SingleQuadParticle#render(VertexConsumer,Camera,float)]
@@ -70,24 +67,27 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
         Quaternionf quaternion = new Quaternionf(renderInfo.rotation());
         quaternion.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
 
-        int lightColor = this.getLightColor(partialTicks);
-
         bufferStack.expectFormat(ParticleVertexFormat.PARTICLE_ARRAY, ParticleVertexFormat.PARTICLE_ARRAY_DIVS);
 
         InstancedParticleBufferBuilder instance = bufferStack.instanceBuilder();
 
         /// {@link ParticleVertexFormat#PARTICLE_ARRAY}
 
-        // UV2 location=0 2s
-        instance.uv2(lightColor);
-        // Alpha location=1 1f
-        instance.alpha(alpha);
+        // Color location=0 4b
+        instance.color(1.0f, 0.0f, 0.0f, alpha);
+        // UVTransform location=1 4f
+        instance.localUV(
+                TextureAtlasSpriteUtil.getSpriteU(sprite, getU0()),
+                TextureAtlasSpriteUtil.getSpriteV(sprite, getV0()),
+                TextureAtlasSpriteUtil.getSpriteU(sprite, getU1()),
+                TextureAtlasSpriteUtil.getSpriteV(sprite, getV1())
+        );
         // InstancePos location=2 3f
         instance.instancedPos(offsetX, offsetY, offsetZ);
-        // Quaternion location=3 4f
-        instance.quaternion(quaternion);
-        // Size location=4 1f
+        // Size location=3 1f
         instance.size(getQuadSize(partialTicks));
+        // Roll location=4 1f
+        instance.roll(Mth.lerp(partialTicks, this.oRoll, this.roll));
 
         instance.endVertex();
     }
@@ -110,13 +110,11 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
             position.rotate(quaternionf);
         }
 
-        float u0 = this.getU0();
-        float u1 = this.getU1();
-        float v0 = this.getV0();
-        float v1 = this.getV1();
-        buffer.vertex(positionVec[0].x(), positionVec[0].y(), positionVec[0].z()).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
-        buffer.vertex(positionVec[1].x(), positionVec[1].y(), positionVec[1].z()).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
-        buffer.vertex(positionVec[2].x(), positionVec[2].y(), positionVec[2].z()).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
-        buffer.vertex(positionVec[3].x(), positionVec[3].y(), positionVec[3].z()).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, 1.0f).endVertex();
+        int packedLight = getLightColor(partialTicks);
+
+        buffer.vertex(positionVec[0].x(), positionVec[0].y(), positionVec[0].z()).uv(1, 1).uv2(packedLight).endVertex();
+        buffer.vertex(positionVec[1].x(), positionVec[1].y(), positionVec[1].z()).uv(1, 0).uv2(packedLight).endVertex();
+        buffer.vertex(positionVec[2].x(), positionVec[2].y(), positionVec[2].z()).uv(0, 0).uv2(packedLight).endVertex();
+        buffer.vertex(positionVec[3].x(), positionVec[3].y(), positionVec[3].z()).uv(0, 1).uv2(packedLight).endVertex();
     }
 }

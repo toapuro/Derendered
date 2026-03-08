@@ -11,27 +11,30 @@ public class InstancedParticleBufferBuilder extends BufferBuilder {
         super(pCapacity);
     }
 
-    private boolean expectFormat(VertexFormatElement.Usage usage, VertexFormatElement.Type elementType, int count) {
+    private boolean expectFormat(VertexFormatElement element) {
         VertexFormatElement vertexformatelement = this.currentElement();
-        if (vertexformatelement.getUsage() != usage) {
+        if (vertexformatelement.getUsage() != element.getUsage()) {
             return false;
-        } else if (vertexformatelement.getType() == elementType && vertexformatelement.getCount() == count) {
+        } else if (vertexformatelement.getType() == element.getType() && vertexformatelement.getCount() == element.getCount()) {
             return true;
         } else {
             throw new IllegalStateException();
         }
     }
 
-    public InstancedParticleBufferBuilder alpha(float alpha) {
-        if (expectFormat(VertexFormatElement.Usage.GENERIC, VertexFormatElement.Type.FLOAT, 1)) {
-            this.putFloat(0, alpha);
+    public InstancedParticleBufferBuilder localUV(float u0, float v0, float u1, float v1) {
+        if (expectFormat(ParticleVertexFormat.ELEMENT_LOCAL_UV0)) {
+            this.putFloat(0, u0);
+            this.putFloat(4, v0);
+            this.putFloat(8, u1);
+            this.putFloat(12, v1);
             this.nextElement();
         }
         return this;
     }
 
     public InstancedParticleBufferBuilder instancedPos(float x, float y, float z) {
-        if (expectFormat(VertexFormatElement.Usage.POSITION, VertexFormatElement.Type.FLOAT, 3)) {
+        if (expectFormat(ParticleVertexFormat.ELEMENT_INSTANCE_POS)) {
             this.putFloat(0, x);
             this.putFloat(4, y);
             this.putFloat(8, z);
@@ -41,7 +44,7 @@ public class InstancedParticleBufferBuilder extends BufferBuilder {
     }
 
     public InstancedParticleBufferBuilder quaternion(Quaternionf quaternionf) {
-        if (expectFormat(VertexFormatElement.Usage.GENERIC, VertexFormatElement.Type.FLOAT, 4)) {
+        if (expectFormat(ParticleVertexFormat.ELEMENT_QUATERNION)) {
             this.putFloat(0, quaternionf.x);
             this.putFloat(4, quaternionf.y);
             this.putFloat(8, quaternionf.z);
@@ -52,8 +55,16 @@ public class InstancedParticleBufferBuilder extends BufferBuilder {
     }
 
     public InstancedParticleBufferBuilder size(float size) {
-        if (expectFormat(VertexFormatElement.Usage.GENERIC, VertexFormatElement.Type.FLOAT, 1)) {
+        if (expectFormat(ParticleVertexFormat.ELEMENT_SIZE)) {
             this.putFloat(0, size);
+            this.nextElement();
+        }
+        return this;
+    }
+
+    public InstancedParticleBufferBuilder roll(float roll) {
+        if (expectFormat(ParticleVertexFormat.ELEMENT_ROLL)) {
+            this.putFloat(0, roll);
             this.nextElement();
         }
         return this;

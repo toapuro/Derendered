@@ -1,6 +1,7 @@
 package io.github.toapuro.derendered.api.render.instancing;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;

@@ -9,12 +9,12 @@
   "attributes": [
     "Position",
     "UV0",
-    "Color",
     "UV2",
-    "Alpha",
+    "Color",
+    "LocalUV0",
     "InstancePos",
-    "QuaternionMat",
-    "Size"
+    "Size",
+    "Roll"
   ],
   "samplers": [
     { "name": "Sampler0" },
@@ -27,6 +27,8 @@
     { "name": "FogStart", "type": "float", "count": 1, "values": [ 0.0 ] },
     { "name": "FogEnd", "type": "float", "count": 1, "values": [ 1.0 ] },
     { "name": "FogColor", "type": "float", "count": 4, "values": [ 0.0, 0.0, 0.0, 0.0 ] },
-    { "name": "FogShape", "type": "int", "count": 1, "values": [ 0 ] }
+    { "name": "FogShape", "type": "int", "count": 1, "values": [ 0 ] },
+    { "name": "SpriteUV0", "type": "float", "count": 2, "values": [ 0.0, 0.0 ] },
+    { "name": "SpriteUV1", "type": "float", "count": 2, "values": [ 0.0, 0.0 ] }
   ]
 }

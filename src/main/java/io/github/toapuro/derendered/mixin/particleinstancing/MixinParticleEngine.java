@@ -1,6 +1,7 @@
 package io.github.toapuro.derendered.mixin.particleinstancing;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tesselator;
 import io.github.toapuro.derendered.api.config.ModConfig;
@@ -13,6 +14,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -91,6 +93,8 @@ public class MixinParticleEngine {
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
 
+        ShaderInstance lastShader = RenderSystem.getShader();
+
         // Rendering
         for (List<IInstancedParticle> batchParticles : batchMap.values()) {
             RenderResult result = InstancedParticleEngine.render(batchParticles, bufferbuilder, derendered$instancedBuffer, particleRenderType, activeRenderInfo, textureManager, partialTicks);
@@ -100,6 +104,8 @@ public class MixinParticleEngine {
                 return particles;
             }
         }
+
+        RenderSystem.setShader(() -> lastShader);
 
         return fallbackParticles;
     }

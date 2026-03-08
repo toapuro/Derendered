@@ -48,7 +48,7 @@ public class MixinParticleEngine {
                                      @Local(argsOnly = true) float partialTicks,
                                      @Local ParticleRenderType particleRenderType) {
 
-        if(!ModConfig.get().isRuntimeOptionEnabled(RuntimeOption.PARTICLE_INSTANCING)) {
+        if(!ModConfig.get().getRuntime().isEnabled(RuntimeOption.PARTICLE_INSTANCING)) {
             return particles;
         }
 

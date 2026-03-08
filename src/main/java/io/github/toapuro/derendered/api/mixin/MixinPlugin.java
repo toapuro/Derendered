@@ -54,7 +54,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
             for (PreloadOption option : options) {
                 ModConfig modConfig = ModConfig.get();
-                if(!modConfig.isPreloadOptionEnabled(option)) {
+                if(!modConfig.getPreload().isEnabled(option)) {
                     return false;
                 }
             }

@@ -74,7 +74,7 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
         /// {@link ParticleVertexFormat#PARTICLE_ARRAY}
 
         // Color location=0 4b
-        instance.color(1.0f, 0.0f, 0.0f, alpha);
+        instance.color(rCol, gCol, bCol, alpha);
         // UVTransform location=1 4f
         instance.localUV(
                 TextureAtlasSpriteUtil.getSpriteU(sprite, getU0()),

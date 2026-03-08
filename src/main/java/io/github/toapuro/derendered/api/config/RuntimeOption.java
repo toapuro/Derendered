@@ -1,7 +1,6 @@
 package io.github.toapuro.derendered.api.config;
 
 import io.github.toapuro.derendered.lang.DerenderedLang;
-import net.minecraft.network.chat.Component;
 
 public enum RuntimeOption implements IOption {
     PARTICLE_INSTANCING("particle_instancing", DerenderedLang.PARTICLE_INSTANCING, true);
@@ -31,10 +30,5 @@ public enum RuntimeOption implements IOption {
     @Override
     public boolean isDefaultEnabled() {
         return defaultEnabled;
-    }
-
-    @Override
-    public Component getDescription() {
-        return Component.translatable(lang.getKey() + ".desc");
     }
 }

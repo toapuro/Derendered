@@ -170,6 +170,7 @@ dependencies {
 
     // Optional Dependencies
     implementation(fg.deobf(deps.oculus))
+    implementation(fg.deobf("curse.maven:embeddium-908741:5681725"))
 }
 
 tasks.test {

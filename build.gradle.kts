@@ -67,6 +67,8 @@ minecraft {
         create("client") {
             property("forge.enabledGameTestNamespaces", ModConfig.MOD_ID)
             jvmArgs("-XX:+AllowEnhancedClassRedefinition")
+
+            property("mixin.env.compatLevel", "JAVA_17")
         }
 
         create("server") {
@@ -164,7 +166,10 @@ dependencies {
     runtimeOnly(fg.deobf(deps.jeiIntegration))
 
     // Mod Dependencies
-    implementation(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
+    implementation(fg.deobf(deps.clothConfig))
+
+    // Optional Dependencies
+    implementation(fg.deobf(deps.oculus))
 }
 
 tasks.test {
@@ -183,6 +188,8 @@ tasks.named<ProcessResources>("processResources") {
         "forge_version" to libs.versions.forge.get(),
         "forge_version_range" to libs.versions.forgeRange.get(),
         "loader_version_range" to libs.versions.loaderRange.get(),
+
+        "oculus_version_range" to deps.versions.oculusRange.get(),
 
         "mod_id" to ModConfig.MOD_ID,
         "mod_name" to ModConfig.MOD_NAME,

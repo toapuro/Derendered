@@ -1,5 +1,6 @@
 package io.github.toapuro.derendered.api.config.registry;
 
+import io.github.toapuro.derendered.api.config.IOption;
 import lombok.SneakyThrows;
 import me.shedaniel.autoconfig.gui.registry.api.GuiProvider;
 import me.shedaniel.autoconfig.gui.registry.api.GuiRegistryAccess;
@@ -13,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class EnableConfigGuiProvider implements GuiProvider {
-    private static final Component resetButtonKey = Component.translatable("text.cloth-config.reset_value");
-
     @SuppressWarnings({"rawtypes", "unchecked"})
     @SneakyThrows
     @Override
@@ -32,11 +31,21 @@ public class EnableConfigGuiProvider implements GuiProvider {
                 throw new IllegalStateException("Value " + value.toString() + " is not boolean");
             }
 
-            entries.add(new BooleanToggleBuilder(resetButtonKey, Component.translatable(i18n), bool)
-                    .setSaveConsumer(newValue -> map.put(key, newValue))
-                    .build());
+
+            BooleanToggleBuilder toggleBuilder = new BooleanToggleBuilder(ComponentConstant.resetButtonKey, Component.translatable(i18n), bool);
+            toggleBuilder.setSaveConsumer(newValue -> map.put(key.toString(), newValue));
+
+            if(key instanceof IOption option) {
+                toggleBuilder.setErrorSupplier(option::validate);
+            }
+
+            entries.add(toggleBuilder.build());
         });
 
         return entries;
+    }
+
+    static class ComponentConstant {
+        private static final Component resetButtonKey = Component.translatable("text.cloth-config.reset_value");
     }
 }

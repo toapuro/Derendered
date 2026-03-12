@@ -3,6 +3,7 @@ package io.github.toapuro.derendered.api.mixin;
 import io.github.toapuro.derendered.api.config.ModConfig;
 import io.github.toapuro.derendered.api.config.PreloadOption;
 import lombok.extern.slf4j.Slf4j;
+import net.minecraftforge.fml.loading.LoadingModList;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -23,6 +24,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
     private final String PRELOAD_OPTION_DESC = PreloadOption.class.descriptorString();
     private final String REQUIRE_PRELOAD_DESC = RequirePreloadOption.class.descriptorString();
     private final String REQUIRE_PRELOADS_DESC = RequirePreloadOptions.class.descriptorString();
+    private final String REQUIRE_MOD_LOADED_DESC = RequireModLoaded.class.descriptorString();
 
     @Override
     public void onLoad(String mixinPackage) {
@@ -40,33 +42,60 @@ public class MixinPlugin implements IMixinConfigPlugin {
             if(classNode.visibleAnnotations == null) {
                 return true;
             }
-            List<PreloadOption> options = classNode.visibleAnnotations.stream()
-                    // RequirePreloadOption, RequirePreloadOptions -> [RequirePreloadOption, ...]
-                    .flatMap(this::expandAnnotations)
-                    // RequirePreloadOption -> String[] (Enum)
-                    .map(node -> (String[]) getAnnotationValue(node, "value"))
-                    .filter(Objects::nonNull)
-                    // String[] (Enum) -> String[] (PreloadOption)
-                    .filter(info -> info[0].equals(PRELOAD_OPTION_DESC))
-                    .map(info -> PreloadOption.valueOf(info[1]))
-                    .toList();
 
+            return checkPreloadOptions(classNode)
+                    && checkModLoaded(classNode);
 
-            for (PreloadOption option : options) {
-                ModConfig modConfig = ModConfig.get();
-                if(!modConfig.getPreload().isEnabled(option)) {
-                    return false;
-                }
-            }
-
-            return true;
         } catch (ClassNotFoundException | IOException e) {
             log.debug("Failed to load mixin class", e);
             return false;
         }
     }
 
-    private @NotNull Stream<AnnotationNode> expandAnnotations(AnnotationNode node) {
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private boolean checkPreloadOptions(ClassNode classNode) throws ClassNotFoundException, IOException {
+
+        List<PreloadOption> options = classNode.visibleAnnotations.stream()
+                // RequirePreloadOption, RequirePreloadOptions -> [RequirePreloadOption, ...]
+                .flatMap(this::expandPreloadAnnotations)
+                // RequirePreloadOption -> String[] (Enum)
+                .map(node -> (String[]) getAnnotationValue(node, "value"))
+                .filter(Objects::nonNull)
+                // String[] (Enum) -> String[] (PreloadOption)
+                .filter(info -> info[0].equals(PRELOAD_OPTION_DESC))
+                .map(info -> PreloadOption.valueOf(info[1]))
+                .toList();
+
+
+        for (PreloadOption option : options) {
+            ModConfig modConfig = ModConfig.get();
+            if(!modConfig.getPreload().isEnabled(option)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean checkModLoaded(ClassNode classNode) throws ClassNotFoundException, IOException {
+        List<String> requiredMods = classNode.visibleAnnotations.stream()
+                .filter(node -> node.desc.equals(REQUIRE_MOD_LOADED_DESC))
+                // RequireModLoaded -> String[]
+                .<String>flatMap(node -> getAnnotationValue(node, "value"))
+                .filter(Objects::nonNull)
+                .toList();
+
+
+        for (String modid : requiredMods) {
+            if(LoadingModList.get().getModFileById(modid) == null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private @NotNull Stream<AnnotationNode> expandPreloadAnnotations(AnnotationNode node) {
         if(node.desc.equals(REQUIRE_PRELOAD_DESC)) {
             return Stream.of(node);
         } else if(node.desc.equals(REQUIRE_PRELOADS_DESC)) {

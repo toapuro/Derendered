@@ -1,12 +1,11 @@
 package io.github.toapuro.derendered.api.config.category;
 
 import io.github.toapuro.derendered.api.config.PreloadOption;
-import me.shedaniel.autoconfig.ConfigData;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PreloadConfig implements ConfigData {
+public class PreloadConfig extends OptionFlagsConfigData<PreloadOption> {
 
     private final Map<String, Boolean> enabled;
 
@@ -18,11 +17,13 @@ public class PreloadConfig implements ConfigData {
         }
     }
 
-    public void setEnabled(PreloadOption option, boolean enabled) {
-        this.enabled.put(option.getId(), enabled);
+    @Override
+    protected Map<String, Boolean> mutableOptionMap() {
+        return enabled;
     }
 
-    public boolean isEnabled(PreloadOption option) {
-        return this.enabled.getOrDefault(option.getId(), option.isDefaultEnabled());
+    @Override
+    protected PreloadOption[] options() {
+        return PreloadOption.values();
     }
 }

@@ -11,7 +11,7 @@ public class OculusCompat {
         return ModList.get().isLoaded(MODID);
     }
 
-    public static boolean isShaderEnabled() {
-        return IrisApi.getInstance().isShaderPackInUse();
+    public static boolean isShaderEnabledSafe() {
+        return isEnabled() && IrisApi.getInstance().isShaderPackInUse();
     }
 }

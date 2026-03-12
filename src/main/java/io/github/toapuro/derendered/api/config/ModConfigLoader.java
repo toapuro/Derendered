@@ -1,6 +1,6 @@
 package io.github.toapuro.derendered.api.config;
 
-import io.github.toapuro.derendered.api.config.registry.EnableConfigGuiProvider;
+import io.github.toapuro.derendered.api.config.registry.OptionFlagsGuiProvider;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.gui.registry.GuiRegistry;
@@ -25,7 +25,7 @@ public class ModConfigLoader {
 
     protected ConfigHolder<ModConfig> loadConfig() {
         GuiRegistry guiRegistry = AutoConfig.getGuiRegistry(ModConfig.class);
-        guiRegistry.registerTypeProvider(new EnableConfigGuiProvider(), Map.class);
+        guiRegistry.registerTypeProvider(new OptionFlagsGuiProvider(), Map.class);
 
         return AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
     }

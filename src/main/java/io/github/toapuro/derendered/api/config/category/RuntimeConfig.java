@@ -1,12 +1,11 @@
 package io.github.toapuro.derendered.api.config.category;
 
 import io.github.toapuro.derendered.api.config.RuntimeOption;
-import me.shedaniel.autoconfig.ConfigData;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class RuntimeConfig implements ConfigData {
+public class RuntimeConfig extends OptionFlagsConfigData<RuntimeOption> {
 
     private final Map<String, Boolean> enabled;
 
@@ -18,11 +17,13 @@ public class RuntimeConfig implements ConfigData {
         }
     }
 
-    public void setEnabled(RuntimeOption option, boolean enabled) {
-        this.enabled.put(option.getId(), enabled);
+    @Override
+    protected Map<String, Boolean> mutableOptionMap() {
+        return enabled;
     }
 
-    public boolean isEnabled(RuntimeOption option) {
-        return this.enabled.getOrDefault(option.getId(), option.isDefaultEnabled());
+    @Override
+    protected RuntimeOption[] options() {
+        return RuntimeOption.values();
     }
 }

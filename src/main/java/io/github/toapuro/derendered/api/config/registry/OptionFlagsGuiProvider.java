@@ -1,6 +1,5 @@
 package io.github.toapuro.derendered.api.config.registry;
 
-import io.github.toapuro.derendered.api.config.IOption;
 import lombok.SneakyThrows;
 import me.shedaniel.autoconfig.gui.registry.api.GuiProvider;
 import me.shedaniel.autoconfig.gui.registry.api.GuiRegistryAccess;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class EnableConfigGuiProvider implements GuiProvider {
+public class OptionFlagsGuiProvider implements GuiProvider {
     @SuppressWarnings({"rawtypes", "unchecked"})
     @SneakyThrows
     @Override
@@ -35,8 +34,8 @@ public class EnableConfigGuiProvider implements GuiProvider {
             BooleanToggleBuilder toggleBuilder = new BooleanToggleBuilder(ComponentConstant.resetButtonKey, Component.translatable(i18n), bool);
             toggleBuilder.setSaveConsumer(newValue -> map.put(key.toString(), newValue));
 
-            if(key instanceof IOption option) {
-                toggleBuilder.setErrorSupplier(option::validate);
+            if(config instanceof IOptionFlagsValidator validator) {
+                toggleBuilder.setErrorSupplier(flag -> validator.checkError(key.toString(), flag));
             }
 
             entries.add(toggleBuilder.build());

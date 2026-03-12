@@ -1,7 +1,6 @@
 package io.github.toapuro.derendered.api.render.instancing;
 
 import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;
@@ -38,8 +37,8 @@ public class InstancedBufferStack {
     }
 
     public void expectFormat(VertexFormat instanceFormat, DivisorVertexFormat divisorFormat) {
-        Preconditions.checkArgument(this.instanceFormat.equals(instanceFormat), "Instance format does not match");
-        Preconditions.checkArgument(this.divisorFormat.equals(divisorFormat), "Divisor vertex format does not match");
+        Preconditions.checkState(this.instanceFormat.equals(instanceFormat), "Instance format does not match");
+        Preconditions.checkState(this.divisorFormat.equals(divisorFormat), "Divisor vertex format does not match");
     }
 
     public void flush(Matrix4f modelViewMatrix, Matrix4f projectionMatrix) {

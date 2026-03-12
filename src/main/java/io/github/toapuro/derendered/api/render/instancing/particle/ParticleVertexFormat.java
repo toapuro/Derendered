@@ -10,12 +10,12 @@ import io.github.toapuro.derendered.api.render.instancing.DivisorVertexFormat.Ve
 import static com.mojang.blaze3d.vertex.DefaultVertexFormat.*;
 
 public class ParticleVertexFormat {
-    // Normalized (Accuracy 1/255)
-    public static final VertexFormatElement ELEMENT_LOCAL_UV0 = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.NORMAL, 4);
+    // Normalized unsigned short (acc 1/65535)
+    public static final VertexFormatElement ELEMENT_LOCAL_UV0 = new VertexFormatElement(0, VertexFormatElement.Type.USHORT, VertexFormatElement.Usage.NORMAL, 4);
     public static final VertexFormatElement ELEMENT_INSTANCE_POS = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
-    public static final VertexFormatElement ELEMENT_QUATERNION = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
     public static final VertexFormatElement ELEMENT_SIZE = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
-    public static final VertexFormatElement ELEMENT_ROLL = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
+    // Normalized unsigned byte (acc 1/255)
+    public static final VertexFormatElement ELEMENT_ROLL = new VertexFormatElement(0, VertexFormatElement.Type.UBYTE, VertexFormatElement.Usage.NORMAL, 1);
 
     public static final VertexFormat PARTICLE_VBO = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
             .put("Position", ELEMENT_POSITION)

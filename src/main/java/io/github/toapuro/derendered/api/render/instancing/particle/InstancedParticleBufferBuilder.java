@@ -2,7 +2,6 @@ package io.github.toapuro.derendered.api.render.instancing.particle;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-import org.joml.Quaternionf;
 
 @SuppressWarnings("UnusedReturnValue")
 public class InstancedParticleBufferBuilder extends BufferBuilder {
@@ -24,10 +23,10 @@ public class InstancedParticleBufferBuilder extends BufferBuilder {
 
     public InstancedParticleBufferBuilder localUV(float u0, float v0, float u1, float v1) {
         if (expectFormat(ParticleVertexFormat.ELEMENT_LOCAL_UV0)) {
-            this.putFloat(0, u0);
-            this.putFloat(4, v0);
-            this.putFloat(8, u1);
-            this.putFloat(12, v1);
+            this.putShort(0, (short) (u0*65535f));
+            this.putShort(2, (short) (v0*65535f));
+            this.putShort(4, (short) (u1*65535f));
+            this.putShort(6, (short) (v1*65535f));
             this.nextElement();
         }
         return this;
@@ -43,17 +42,6 @@ public class InstancedParticleBufferBuilder extends BufferBuilder {
         return this;
     }
 
-    public InstancedParticleBufferBuilder quaternion(Quaternionf quaternionf) {
-        if (expectFormat(ParticleVertexFormat.ELEMENT_QUATERNION)) {
-            this.putFloat(0, quaternionf.x);
-            this.putFloat(4, quaternionf.y);
-            this.putFloat(8, quaternionf.z);
-            this.putFloat(12, quaternionf.w);
-            this.nextElement();
-        }
-        return this;
-    }
-
     public InstancedParticleBufferBuilder size(float size) {
         if (expectFormat(ParticleVertexFormat.ELEMENT_SIZE)) {
             this.putFloat(0, size);
@@ -64,7 +52,7 @@ public class InstancedParticleBufferBuilder extends BufferBuilder {
 
     public InstancedParticleBufferBuilder roll(float roll) {
         if (expectFormat(ParticleVertexFormat.ELEMENT_ROLL)) {
-            this.putFloat(0, roll);
+            this.putByte(0, (byte) (roll*255f));
             this.nextElement();
         }
         return this;

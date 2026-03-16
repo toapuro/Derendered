@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.toapuro.derendered.api.context.MixinContexts;
-import io.github.toapuro.derendered.api.render.GpuBuffer;
+import io.github.toapuro.derendered.api.render.buffer.GpuBuffer;
 import io.github.toapuro.derendered.api.render.util.VertexFormatUtil;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.renderer.ShaderInstance;

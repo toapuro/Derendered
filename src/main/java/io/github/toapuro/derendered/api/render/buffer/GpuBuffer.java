@@ -1,4 +1,4 @@
-package io.github.toapuro.derendered.api.render;
+package io.github.toapuro.derendered.api.render.buffer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import lombok.Getter;

@@ -1,17 +1,17 @@
-package io.github.toapuro.derendered.api.render.mem;
+package io.github.toapuro.derendered.api.render.buffer;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.lwjgl.system.MemoryUtil;
 
 @AllArgsConstructor
-public class MemBufferCache {
+public class NativeMemBuffer {
 
     @Getter
     private final long size;
     private long ptr;
 
-    public MemBufferCache(long initialSize) {
+    public NativeMemBuffer(long initialSize) {
         this(initialSize, MemoryUtil.nmemAlloc(initialSize));
     }
 
@@ -21,7 +21,7 @@ public class MemBufferCache {
         }
     }
 
-    public void dispose() {
+    public void free() {
         MemoryUtil.nmemFree(ptr);
     }
 

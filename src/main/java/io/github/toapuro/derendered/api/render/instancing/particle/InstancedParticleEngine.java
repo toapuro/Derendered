@@ -4,9 +4,9 @@ import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import io.github.toapuro.derendered.api.render.buffer.NativeMemBuffer;
 import io.github.toapuro.derendered.api.render.instancing.EmptyBufferBuilder;
 import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
-import io.github.toapuro.derendered.api.render.mem.MemBufferCache;
 import io.github.toapuro.derendered.api.render.util.RenderResult;
 import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import net.minecraft.client.Camera;
@@ -23,7 +23,7 @@ import java.util.Objects;
 public class InstancedParticleEngine {
 
     // The only time memory needs to be freed is when the process terminates, so this does not result in a memory leak.
-    private final MemBufferCache bufferCache = new MemBufferCache(32768);
+    private final NativeMemBuffer bufferCache = new NativeMemBuffer(32768);
 
     public final RenderResult renderInstancing(List<IInstancedParticle> particles, BufferBuilder bufferbuilder, InstancedBufferStack bufStack, ParticleRenderType particleRenderType, Camera activeRenderInfo, TextureManager textureManager, float partialTicks) {
         if(particles.isEmpty()) return RenderResult.PASS;

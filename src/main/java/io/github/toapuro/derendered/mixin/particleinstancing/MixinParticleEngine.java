@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,7 +26,11 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 @Mixin(value = ParticleEngine.class, remap = false)
 public class MixinParticleEngine {
@@ -34,13 +39,25 @@ public class MixinParticleEngine {
     @Final private TextureManager textureManager;
 
     @Shadow(remap = true)
-    @Final private Map<ParticleRenderType, Queue<Particle>> particles;
-
-    @Shadow(remap = true)
     @Final private TextureAtlas textureAtlas;
 
     @Unique
     private final InstancedBufferStack derendered$instancedBuffer = new InstancedBufferStack(Tesselator.getInstance().getBuilder());
+
+    @Unique
+    private static @NotNull Map<Integer, List<IInstancedParticle>> derendered$fallbackSmallBatches(Map<Integer, List<IInstancedParticle>> preBatchMap, int minimumBatchSize, Consumer<List<Particle>> listFallback) {
+        Map<Integer, List<IInstancedParticle>> batchMap = new HashMap<>();
+        preBatchMap.forEach((hash, batchParticles) -> {
+            if (batchParticles.size() >= minimumBatchSize) {
+                batchMap.put(hash, batchParticles);
+            } else {
+                listFallback.accept(batchParticles.stream()
+                        .map(IInstancedParticle::self)
+                        .toList());
+            }
+        });
+        return batchMap;
+    }
 
     @ModifyVariable(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V",
             at = @At(value = "STORE"), index = 10)
@@ -55,6 +72,47 @@ public class MixinParticleEngine {
         }
 
         List<Particle> fallbackParticles = new ArrayList<>();
+        Map<Integer, List<IInstancedParticle>> preBatchMap =
+                derendered$makePrebatches(particles, clippingHelper, fallbackParticles::add);
+
+        if(preBatchMap.isEmpty()) return particles;
+
+        int minimumBatchSize = ModConfig.get().getRuntime().particleInstancingMinBatch;
+
+        // Fallback small batches
+        Map<Integer, List<IInstancedParticle>> batchMap =
+                derendered$fallbackSmallBatches(preBatchMap, minimumBatchSize, fallbackParticles::addAll);
+
+        if(preBatchMap.isEmpty()) return particles;
+
+        BufferBuilder bufferbuilder = derendered$instancedBuffer.vboBuilder();
+
+        RenderResult result = derendered$renderWithShaderInstanced(activeRenderInfo, partialTicks, particleRenderType, batchMap, bufferbuilder);
+        if (result.failure()) return particles;
+
+        return fallbackParticles;
+    }
+
+    @Unique
+    private RenderResult derendered$renderWithShaderInstanced(Camera activeRenderInfo, float partialTicks, ParticleRenderType particleRenderType, Map<Integer, List<IInstancedParticle>> batchMap, BufferBuilder bufferbuilder) {
+        ShaderInstance lastShader = RenderSystem.getShader();
+
+        // Rendering
+        for (List<IInstancedParticle> batchParticles : batchMap.values()) {
+            RenderResult result = InstancedParticleEngine.renderInstancing(batchParticles, bufferbuilder, derendered$instancedBuffer, particleRenderType, activeRenderInfo, textureManager, partialTicks);
+
+            if(result.failure()) {
+                // Fail once, fail all
+                return result;
+            }
+        }
+
+        RenderSystem.setShader(() -> lastShader);
+        return RenderResult.SUCCESS;
+    }
+
+    @Unique
+    private @NotNull Map<Integer, List<IInstancedParticle>> derendered$makePrebatches(Iterable<Particle> particles, Frustum clippingHelper, Consumer<Particle> fallback) {
         Map<Integer, List<IInstancedParticle>> preBatchMap = new HashMap<>();
 
         // Particle batching
@@ -66,47 +124,9 @@ public class MixinParticleEngine {
                         .computeIfAbsent(instancedParticle.derendered$getBatchHash(textureAtlas), k -> new ArrayList<>())
                         .add(instancedParticle);
             } else {
-                fallbackParticles.add(particle);
+                fallback.accept(particle);
             }
         }
-
-        Queue<Particle> particleQueue = this.particles.get(particleRenderType);
-
-        int minimumBatchSize = (int) (particleQueue.size() * 0.05);
-
-        // Fallback small batches
-        Map<Integer, List<IInstancedParticle>> batchMap = new HashMap<>();
-        preBatchMap.forEach((hash, batchParticles) -> {
-            if (batchParticles.size() >= minimumBatchSize) {
-                batchMap.put(hash, batchParticles);
-            } else {
-                fallbackParticles.addAll(batchParticles.stream()
-                        .map(IInstancedParticle::self)
-                        .toList());
-            }
-        });
-
-        if(preBatchMap.isEmpty()) {
-            return particles;
-        }
-
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tesselator.getBuilder();
-
-        ShaderInstance lastShader = RenderSystem.getShader();
-
-        // Rendering
-        for (List<IInstancedParticle> batchParticles : batchMap.values()) {
-            RenderResult result = InstancedParticleEngine.render(batchParticles, bufferbuilder, derendered$instancedBuffer, particleRenderType, activeRenderInfo, textureManager, partialTicks);
-
-            if(result.failure()) {
-                // If it fails, it fails for all particles
-                return particles;
-            }
-        }
-
-        RenderSystem.setShader(() -> lastShader);
-
-        return fallbackParticles;
+        return preBatchMap;
     }
 }

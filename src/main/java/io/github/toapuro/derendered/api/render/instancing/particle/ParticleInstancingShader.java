@@ -16,8 +16,15 @@ public class ParticleInstancingShader {
             ParticleVertexFormat.PARTICLE_FULL
     ));
 
+    public static final ShaderHolder INSTANCING_TRANSFORM = ShaderHolder.of(provider -> new ShaderInstance(
+            provider,
+            Derendered.getResource("instancing_transform"),
+            ParticleVertexFormat.PARTICLE_FULL
+    ));
+
     @SubscribeEvent
     public static void registerShader(RegisterShadersEvent event) {
         PARTICLE_INSTANCING.register(event);
+        INSTANCING_TRANSFORM.register(event);
     }
 }

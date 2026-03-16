@@ -1,11 +1,11 @@
 package io.github.toapuro.derendered.mixin.particleinstancing;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
 import io.github.toapuro.derendered.api.render.instancing.particle.IInstancedParticle;
-import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleBufferBuilder;
-import io.github.toapuro.derendered.api.render.instancing.particle.ParticleVertexFormat;
+import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleVertex;
 import io.github.toapuro.derendered.api.render.util.TextureAtlasSpriteUtil;
+import net.caffeinemc.mods.sodium.api.util.ColorABGR;
+import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -55,66 +55,91 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
         return sprite;
     }
 
+    @Unique
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    private static void derendered$writeVBOVertex(long buffer,
+                                                  Quaternionf rotation,
+                                                  float posX, float posY,
+                                                  byte u, byte v, int light) {
+        // Quaternion q0 = new Quaternion(rotation);
+        float q0x = rotation.x();
+        float q0y = rotation.y();
+        float q0z = rotation.z();
+        float q0w = rotation.w();
+
+        // q0.hamiltonProduct(x, y, 0.0f, 0.0f)
+        float q1x = (q0w * posX) - (q0z * posY);
+        float q1y = (q0w * posY) + (q0z * posX);
+        float q1w = (q0x * posY) - (q0y * posX);
+        float q1z = -(q0x * posX) - (q0y * posY);
+
+        // Quaternion q2 = new Quaternion(rotation);
+        // q2.conjugate()
+        float q2x = -q0x;
+        float q2y = -q0y;
+        float q2z = -q0z;
+        float q2w = q0w;
+
+        // q2.hamiltonProduct(q1)
+        float q3x = q1z * q2x + q1x * q2w + q1y * q2z - q1w * q2y;
+        float q3y = q1z * q2y - q1x * q2z + q1y * q2w + q1w * q2x;
+        float q3z = q1z * q2z + q1x * q2y - q1y * q2x + q1w * q2w;
+
+        InstancedParticleVertex.putVBO(buffer, q3x, q3y, q3z, u, v, light);
+    }
+
     /// [SingleQuadParticle#render(VertexConsumer,Camera,float)]
     @Unique
     @Override
-    public void derendered$renderInstance(InstancedBufferStack bufferStack, ParticleRenderType renderType, Camera renderInfo, float partialTicks) {
+    public void derendered$renderInstance(VertexBufferWriter writer, ParticleRenderType renderType, Camera renderInfo, float partialTicks) {
         Vec3 vec3 = renderInfo.getPosition();
-        float offsetX = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
-        float offsetY = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
-        float offsetZ = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
+        float x = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
+        float y = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
+        float z = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
 
-        Quaternionf quaternion = new Quaternionf(renderInfo.rotation());
-        quaternion.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
+        int color = ColorABGR.pack(this.rCol , this.gCol, this.bCol, this.alpha);
 
-        bufferStack.expectFormat(ParticleVertexFormat.PARTICLE_ARRAY, ParticleVertexFormat.PARTICLE_ARRAY_DIVS);
+        float size = this.getQuadSize(partialTicks);
+        float angle = Mth.lerp(partialTicks, this.oRoll, this.roll);
 
-        InstancedParticleBufferBuilder instance = bufferStack.instanceBuilder();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            long buffer = stack.nmalloc(InstancedParticleVertex.INSTANCE_STRIDE);
 
-        /// {@link ParticleVertexFormat#PARTICLE_ARRAY}
+            InstancedParticleVertex.putInstance(
+                    buffer, x, y, z, color,
+                    (short) (TextureAtlasSpriteUtil.getSpriteU(sprite, getU0()) * 65535f),
+                    (short) (TextureAtlasSpriteUtil.getSpriteV(sprite, getV0()) * 65535f),
+                    (short) (TextureAtlasSpriteUtil.getSpriteU(sprite, getU1()) * 65535f),
+                    (short) (TextureAtlasSpriteUtil.getSpriteV(sprite, getV1()) * 65535f),
+                    size, (byte) (angle * 255f)
+            );
 
-        // Color location=0 4b
-        instance.color(rCol, gCol, bCol, alpha);
-        // UVTransform location=1 4f
-        instance.localUV(
-                TextureAtlasSpriteUtil.getSpriteU(sprite, getU0()),
-                TextureAtlasSpriteUtil.getSpriteV(sprite, getV0()),
-                TextureAtlasSpriteUtil.getSpriteU(sprite, getU1()),
-                TextureAtlasSpriteUtil.getSpriteV(sprite, getV1())
-        );
-        // InstancePos location=2 3f
-        instance.instancedPos(offsetX, offsetY, offsetZ);
-        // Size location=3 1f
-        instance.size(getQuadSize(partialTicks));
-        // Roll location=4 1f
-        instance.roll(Mth.lerp(partialTicks, this.oRoll, this.roll));
-
-        instance.endVertex();
+            writer.push(stack, buffer, 1, InstancedParticleVertex.INSTANCE_FORMAT);
+        }
     }
 
-
     @Unique
-    public void derendered$renderVBOSingle(VertexConsumer buffer, Camera renderInfo, float partialTicks) {
-        Quaternionf quaternionf;
-        quaternionf = renderInfo.rotation();
-
-        Vector3f[] positionVec = new Vector3f[] {
-                new Vector3f(-1.0F, -1.0F, 0.0F),
-                new Vector3f(-1.0F, 1.0F, 0.0F),
-                new Vector3f(1.0F, 1.0F, 0.0F),
-                new Vector3f(1.0F, -1.0F, 0.0F)
-        };
-
-        for(int i = 0; i < 4; ++i) {
-            Vector3f position = positionVec[i];
-            position.rotate(quaternionf);
-        }
+    public void derendered$renderVBOSingle(VertexBufferWriter writer, Camera renderInfo, float partialTicks) {
+        Quaternionf quaternion = renderInfo.rotation();
 
         int packedLight = getLightColor(partialTicks);
 
-        buffer.vertex(positionVec[0].x(), positionVec[0].y(), positionVec[0].z()).uv(1, 1).uv2(packedLight).endVertex();
-        buffer.vertex(positionVec[1].x(), positionVec[1].y(), positionVec[1].z()).uv(1, 0).uv2(packedLight).endVertex();
-        buffer.vertex(positionVec[2].x(), positionVec[2].y(), positionVec[2].z()).uv(0, 0).uv2(packedLight).endVertex();
-        buffer.vertex(positionVec[3].x(), positionVec[3].y(), positionVec[3].z()).uv(0, 1).uv2(packedLight).endVertex();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            long buffer = stack.nmalloc(4 * InstancedParticleVertex.VBO_STRIDE);
+            long ptr = buffer;
+
+            derendered$writeVBOVertex(ptr, quaternion,-1.0F, -1.0F, (byte) 1, (byte) 1, packedLight);
+            ptr += InstancedParticleVertex.VBO_STRIDE;
+
+            derendered$writeVBOVertex(ptr, quaternion,-1.0F, 1.0F, (byte) 1, (byte) 0, packedLight);
+            ptr += InstancedParticleVertex.VBO_STRIDE;
+
+            derendered$writeVBOVertex(ptr, quaternion,1.0F, 1.0F, (byte) 0, (byte) 0, packedLight);
+            ptr += InstancedParticleVertex.VBO_STRIDE;
+
+            derendered$writeVBOVertex(ptr, quaternion,1.0F, -1.0F, (byte) 0, (byte) 1, packedLight);
+
+            writer.push(stack, buffer, 4, InstancedParticleVertex.VBO_FORMAT);
+        }
     }
 }

@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 @Slf4j
 public abstract class OptionFlagsConfigData<T extends IConfigOption> implements ConfigData, IOptionFlagsValidator {
@@ -25,7 +27,8 @@ public abstract class OptionFlagsConfigData<T extends IConfigOption> implements 
 
     public boolean isEnabled(T option) {
         boolean enabled = mutableOptionMap().getOrDefault(option.getId(), option.isDefaultEnabled());
-        return option.properties().getFlagModifier().apply(enabled);
+        UnaryOperator<Boolean> flagModifier = option.properties().getFlagModifier();
+        return flagModifier != null ? flagModifier.apply(enabled) : enabled;
     }
 
     @Override
@@ -35,7 +38,9 @@ public abstract class OptionFlagsConfigData<T extends IConfigOption> implements 
                 .toList();
 
         for (T option : options) {
-            ErrorResult result = option.properties().getErrorChecker().apply(flag);
+            Function<Boolean, ErrorResult> errorChecker = option.properties().getErrorChecker();
+            if(errorChecker == null) continue;
+            ErrorResult result = errorChecker.apply(flag);
             Component component = result.errorComponent();
             if(component != null) {
                 return Optional.of(component);
@@ -45,7 +50,7 @@ public abstract class OptionFlagsConfigData<T extends IConfigOption> implements 
     }
 
     @Override
-    public void validatePostLoad() throws ValidationException {
+    public void validatePostLoad() {
         Map<String, Boolean> optionMap = mutableOptionMap();
         for (T option : options()) {
             if(!option.properties().isValidateOnLoad()) {
@@ -53,7 +58,9 @@ public abstract class OptionFlagsConfigData<T extends IConfigOption> implements 
             }
 
             boolean flag = optionMap.getOrDefault(option.getId(), option.isDefaultEnabled());
-            ErrorResult result = option.properties().getErrorChecker().apply(flag);
+            Function<Boolean, ErrorResult> errorChecker = option.properties().getErrorChecker();
+            if(errorChecker == null) continue;
+            ErrorResult result = errorChecker.apply(flag);
 
             if(result.errorComponent() != null) {
                 log.error("Validation failed {}=={}: {}", option.getId(), flag, result.errorComponent().getString());

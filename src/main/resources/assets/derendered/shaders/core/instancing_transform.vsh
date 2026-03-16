@@ -3,12 +3,12 @@
 #moj_import <fog.glsl>
 
 in vec3 Position;
-in uvec2 UV0;
+in vec2 UV0;
 in ivec2 UV2;
 
-in vec3 InstancePos;
 in vec4 Color;
 in vec4 LocalUV0;
+in vec3 InstancePos;
 in float Size;
 in float Roll;
 
@@ -20,9 +20,10 @@ uniform int FogShape;
 uniform vec2 SpriteUV0;
 uniform vec2 SpriteUV1;
 
-out float vertexDistance;
-out vec2 texCoord0;
-out vec4 vertexColor;
+out vec3 tf_Position;
+out vec2 tf_UV0;
+out vec4 tf_Color;
+out ivec2 tf_UV2;
 
 vec3 rotateZ(vec3 v, float angle) {
     float c = cos(angle);
@@ -35,14 +36,11 @@ vec3 rotateZ(vec3 v, float angle) {
 }
 
 void main() {
-    vec3 vertPosition = rotateZ((Position * Size) + InstancePos, Roll);
-
-    gl_Position = ProjMat * ModelViewMat * vec4(vertPosition, 1.0);
-
-    vertexDistance = fog_distance(ModelViewMat, vertPosition, FogShape);
+    tf_Position = rotateZ((Position * Size) + InstancePos, Roll);
 
     vec2 localUV = LocalUV0.xy + (LocalUV0.zw - LocalUV0.xy) * UV0;
-    texCoord0 = SpriteUV0 + localUV * (SpriteUV1 - SpriteUV0);
+    tf_UV0 = SpriteUV0 + localUV * (SpriteUV1 - SpriteUV0);
 
-    vertexColor = Color * texelFetch(Sampler2, UV2 / 16, 0);
+    tf_Color = Color;
+    tf_UV2 = UV2;
 }

@@ -9,6 +9,8 @@ public class RuntimeConfig extends OptionFlagsConfigData<RuntimeOption> {
 
     private final Map<String, Boolean> enabled;
 
+    public int particleInstancingMinBatch = 1000;
+
     public RuntimeConfig() {
         this.enabled = new HashMap<>();
 

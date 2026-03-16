@@ -10,9 +10,9 @@
     "Position",
     "UV0",
     "UV2",
+    "InstancePos",
     "Color",
     "LocalUV0",
-    "InstancePos",
     "Size",
     "Roll"
   ],

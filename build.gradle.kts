@@ -16,7 +16,7 @@ plugins {
 object ModConfig {
     const val MOD_ID = "derendered"
     const val MOD_NAME = "Derendered"
-    const val MOD_LICENSE = "MIT"
+    const val MOD_LICENSE = "LGPL"
     const val MOD_VERSION = "0.1.0"
     const val MOD_GROUP_ID = "io.github.toapuro.derendered"
     const val MOD_AUTHORS = "toapuro"
@@ -48,7 +48,7 @@ sourceSets {
 minecraft {
     mappings("parchment", libs.versions.parchment)
     copyIdeResources.set(true)
-//    accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
+    accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
     runs.configureEach {
         workingDirectory(project.file("run"))

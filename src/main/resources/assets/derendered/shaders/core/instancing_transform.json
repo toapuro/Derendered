@@ -1,0 +1,19 @@
+{
+  "vertex": "derendered:instancing_transform",
+  "fragment": "position",
+  "attributes": [
+    "Position",
+    "UV0",
+    "UV2",
+    "Color",
+    "LocalUV0",
+    "InstancePos",
+    "Size",
+    "Roll"
+  ],
+  "samplers": [],
+  "uniforms": [
+    { "name": "SpriteUV0", "type": "float", "count": 2, "values": [ 0.0, 0.0 ] },
+    { "name": "SpriteUV1", "type": "float", "count": 2, "values": [ 0.0, 0.0 ] }
+  ]
+}

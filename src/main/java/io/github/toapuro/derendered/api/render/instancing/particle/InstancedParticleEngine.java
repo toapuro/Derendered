@@ -6,8 +6,8 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.toapuro.derendered.api.render.instancing.EmptyBufferBuilder;
 import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
-import io.github.toapuro.derendered.api.render.shader.ShaderHolder;
 import io.github.toapuro.derendered.api.render.util.RenderResult;
+import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -19,15 +19,17 @@ import java.util.Objects;
 
 public class InstancedParticleEngine {
 
-    public static RenderResult render(List<IInstancedParticle> particles, BufferBuilder bufferbuilder, InstancedBufferStack instancedBuffer, ParticleRenderType particleRenderType, Camera activeRenderInfo, TextureManager textureManager, float partialTicks) {
+    public static RenderResult renderInstancing(List<IInstancedParticle> particles, BufferBuilder bufferbuilder, InstancedBufferStack stack, ParticleRenderType particleRenderType, Camera activeRenderInfo, TextureManager textureManager, float partialTicks) {
         if(particles.isEmpty()) return RenderResult.PASS;
 
+        VertexFormat.Mode mode = VertexFormat.Mode.QUADS;
+        VertexFormat vboFormat = ParticleVertexFormat.PARTICLE_VBO;
         ShaderInstance shader = ParticleInstancingShader.PARTICLE_INSTANCING.get();
 
         // Setup
-        instancedBuffer.beginInstance(VertexFormat.Mode.QUADS, ParticleVertexFormat.PARTICLE_ARRAY, ParticleVertexFormat.PARTICLE_ARRAY_DIVS);
+        stack.beginInstance(mode, ParticleVertexFormat.PARTICLE_ARRAY, ParticleVertexFormat.PARTICLE_ARRAY_DIVS);
         particleRenderType.begin(EmptyBufferBuilder.EMPTY, textureManager);
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, ParticleVertexFormat.PARTICLE_VBO);
+        bufferbuilder.begin(mode, vboFormat);
         RenderSystem.setShader(() -> shader);
 
         if(!bufferbuilder.building()) {
@@ -37,13 +39,16 @@ public class InstancedParticleEngine {
 
         // Build VBO
         IInstancedParticle firstParticle = particles.get(0);
-        firstParticle.derendered$renderVBOSingle(bufferbuilder, activeRenderInfo, partialTicks);
+        VertexBufferWriter vboWriter = VertexBufferWriter.of(bufferbuilder);
+        firstParticle.derendered$renderVBOSingle(vboWriter, activeRenderInfo, partialTicks);
 
         // Build Instanced VBO
-        for (IInstancedParticle instancedParticle : particles) {
-            instancedParticle.derendered$renderInstance(instancedBuffer, particleRenderType, activeRenderInfo, partialTicks);
-        }
+        var instancedBuilder = stack.instanceBuilder();
+        VertexBufferWriter instanceWriter = VertexBufferWriter.of(instancedBuilder);
 
+        for (IInstancedParticle instancedParticle : particles) {
+            instancedParticle.derendered$renderInstance(instanceWriter, particleRenderType, activeRenderInfo, partialTicks);
+        }
 
         TextureAtlasSprite sprite = firstParticle.derendered$getSprite();
 
@@ -53,7 +58,30 @@ public class InstancedParticleEngine {
         spriteUV0.set(sprite.getU0(), sprite.getV0());
         spriteUV1.set(sprite.getU1(), sprite.getV1());
 
-        instancedBuffer.flush(RenderSystem.getModelViewStack().last().pose(), RenderSystem.getProjectionMatrix());
+        /*
+        // Transform Feedback
+        if(OculusCompat.isShaderEnabledSafe()) {
+            ShaderInstance transformShader = ParticleInstancingShader.INSTANCING_TRANSFORM.get();
+            ProgramManager.glUseProgram(transformShader.getId());
+
+            VertexBuffer vboBuffer = vboFormat.getImmediateDrawVertexBuffer();
+
+            // Set output VBO
+            GL30.glBindBufferBase(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0, vboBuffer.vertexBufferId);
+            GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
+
+            GL30.glBeginTransformFeedback(mode.asGLMode);
+
+
+
+            GL30.glEndTransformFeedback();
+
+            GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
+            ProgramManager.glUseProgram(0);
+        }
+        */
+
+        stack.flush(RenderSystem.getModelViewStack().last().pose(), RenderSystem.getProjectionMatrix());
 
         return RenderResult.SUCCESS;
     }

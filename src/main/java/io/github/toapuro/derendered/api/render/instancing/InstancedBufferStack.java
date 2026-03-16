@@ -1,13 +1,11 @@
 package io.github.toapuro.derendered.api.render.instancing;
 
-import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.toapuro.derendered.api.context.MixinContexts;
 import io.github.toapuro.derendered.api.render.GpuBuffer;
-import io.github.toapuro.derendered.api.render.instancing.particle.InstancedParticleBufferBuilder;
 import io.github.toapuro.derendered.api.render.util.VertexFormatUtil;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -20,7 +18,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class InstancedBufferStack {
 
-    private final InstancedParticleBufferBuilder instanceBuilder = new InstancedParticleBufferBuilder(256);
+    private final BufferBuilder instanceBuilder = new BufferBuilder(256);
     private final GpuBuffer instanceVBO = new GpuBuffer(GpuBuffer.Usage.DYNAMIC);
     private VertexFormat instanceFormat = null;
     private DivisorVertexFormat divisorFormat = null;
@@ -34,11 +32,6 @@ public class InstancedBufferStack {
         this.instanceFormat = instanceFormat;
         this.divisorFormat = divisorFormat;
         this.building = true;
-    }
-
-    public void expectFormat(VertexFormat instanceFormat, DivisorVertexFormat divisorFormat) {
-        Preconditions.checkState(this.instanceFormat.equals(instanceFormat), "Instance format does not match");
-        Preconditions.checkState(this.divisorFormat.equals(divisorFormat), "Divisor vertex format does not match");
     }
 
     public void flush(Matrix4f modelViewMatrix, Matrix4f projectionMatrix) {
@@ -109,7 +102,7 @@ public class InstancedBufferStack {
         }
     }
 
-    public InstancedParticleBufferBuilder instanceBuilder() {
+    public BufferBuilder instanceBuilder() {
         return instanceBuilder;
     }
 

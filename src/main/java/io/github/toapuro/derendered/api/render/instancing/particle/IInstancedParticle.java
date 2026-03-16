@@ -1,7 +1,6 @@
 package io.github.toapuro.derendered.api.render.instancing.particle;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import io.github.toapuro.derendered.api.render.instancing.InstancedBufferStack;
+import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
@@ -19,7 +18,7 @@ public interface IInstancedParticle {
     /**
      * Write to VBO
      */
-    void derendered$renderVBOSingle(VertexConsumer buffer, Camera renderInfo, float partialTicks);
+    void derendered$renderVBOSingle(VertexBufferWriter writer, Camera renderInfo, float partialTicks);
 
     /**
      * Get TextureAtlasSprite
@@ -31,7 +30,7 @@ public interface IInstancedParticle {
      * @param renderType Needs to be a ParticleRenderType that uses begin(), but fail-safe.
      * @param renderInfo camera
      */
-    void derendered$renderInstance(InstancedBufferStack bufferStack, ParticleRenderType renderType, Camera renderInfo, float pPartialTicks);
+    void derendered$renderInstance(VertexBufferWriter writer, ParticleRenderType renderType, Camera renderInfo, float pPartialTicks);
 
     default Particle self() {
         return (Particle) this;

@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(TextureSheetParticle.class)
-public abstract class TextureSheetParticleMixin extends SingleQuadParticle implements IInstancedParticle {
+public abstract class MixinTextureSheetParticle extends SingleQuadParticle implements IInstancedParticle {
 
     @Shadow protected abstract float getU0();
     @Shadow protected abstract float getU1();
@@ -32,7 +32,7 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
     @Shadow
     protected TextureAtlasSprite sprite;
 
-    protected TextureSheetParticleMixin(ClientLevel pLevel, double pX, double pY, double pZ) {
+    protected MixinTextureSheetParticle(ClientLevel pLevel, double pX, double pY, double pZ) {
         super(pLevel, pX, pY, pZ);
     }
 

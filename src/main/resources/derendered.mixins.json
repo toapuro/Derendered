@@ -8,11 +8,11 @@
   "mixins": [
     "particleinstancing.MixinParticleEngine",
     "sodium.CommonVertexAttributeAccessor",
-    "sodium.CommonVertexAttributeMixin"
+    "sodium.MixinCommonVertexAttribute"
   ],
   "client": [
-    "particleinstancing.MixinVertexBuffer",
-    "particleinstancing.TextureSheetParticleMixin"
+    "particleinstancing.MixinTextureSheetParticle",
+    "particleinstancing.MixinVertexBuffer"
   ],
   "injectors": {
     "defaultRequire": 1

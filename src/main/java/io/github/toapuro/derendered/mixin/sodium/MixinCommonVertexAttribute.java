@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(value = CommonVertexAttribute.class, remap = false)
-public class CommonVertexAttributeMixin {
+public class MixinCommonVertexAttribute {
     @Mutable
     @Shadow @Final
     public static int COUNT;

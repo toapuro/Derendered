@@ -80,29 +80,6 @@ public class InstancedParticleEngine {
         spriteUV0.set(sprite.getU0(), sprite.getV0());
         spriteUV1.set(sprite.getU1(), sprite.getV1());
 
-        /*
-        // Transform Feedback
-        if(OculusCompat.isShaderEnabledSafe()) {
-            ShaderInstance transformShader = ParticleInstancingShader.INSTANCING_TRANSFORM.get();
-            ProgramManager.glUseProgram(transformShader.getId());
-
-            VertexBuffer vboBuffer = vboFormat.getImmediateDrawVertexBuffer();
-
-            // Set output VBO
-            GL30.glBindBufferBase(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0, vboBuffer.vertexBufferId);
-            GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
-
-            GL30.glBeginTransformFeedback(mode.asGLMode);
-
-
-
-            GL30.glEndTransformFeedback();
-
-            GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
-            ProgramManager.glUseProgram(0);
-        }
-        */
-
         bufStack.flush(RenderSystem.getModelViewStack().last().pose(), RenderSystem.getProjectionMatrix());
 
         return RenderResult.SUCCESS;

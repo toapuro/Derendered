@@ -6,6 +6,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.phys.Vec3;
 
 public interface IInstancedParticle {
 
@@ -27,10 +28,10 @@ public interface IInstancedParticle {
 
     /**
      * Write to Instance VBO
+     *
      * @param renderType Needs to be a ParticleRenderType that uses begin(), but fail-safe.
-     * @param renderInfo camera
      */
-    void derendered$renderInstance(VertexBufferWriter writer, ParticleRenderType renderType, Camera renderInfo, float pPartialTicks);
+    void derendered$writeInstanceFast(VertexBufferWriter writer, long buffPtr, ParticleRenderType renderType, Vec3 camPos, float pPartialTicks);
 
     default Particle self() {
         return (Particle) this;

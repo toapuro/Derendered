@@ -88,36 +88,6 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
         InstancedParticleVertex.putVBO(buffer, q3x, q3y, q3z, u, v, light);
     }
 
-    /// [SingleQuadParticle#render(VertexConsumer,Camera,float)]
-    @Unique
-    @Override
-    public void derendered$renderInstance(VertexBufferWriter writer, ParticleRenderType renderType, Camera renderInfo, float partialTicks) {
-        Vec3 vec3 = renderInfo.getPosition();
-        float x = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
-        float y = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
-        float z = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
-
-        int color = ColorABGR.pack(this.rCol , this.gCol, this.bCol, this.alpha);
-
-        float size = this.getQuadSize(partialTicks);
-        float angle = Mth.lerp(partialTicks, this.oRoll, this.roll);
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            long buffer = stack.nmalloc(InstancedParticleVertex.INSTANCE_STRIDE);
-
-            InstancedParticleVertex.putInstance(
-                    buffer, x, y, z, color,
-                    (short) (TextureAtlasSpriteUtil.getSpriteU(sprite, getU0()) * 65535f),
-                    (short) (TextureAtlasSpriteUtil.getSpriteV(sprite, getV0()) * 65535f),
-                    (short) (TextureAtlasSpriteUtil.getSpriteU(sprite, getU1()) * 65535f),
-                    (short) (TextureAtlasSpriteUtil.getSpriteV(sprite, getV1()) * 65535f),
-                    size, (byte) (angle * 255f)
-            );
-
-            writer.push(stack, buffer, 1, InstancedParticleVertex.INSTANCE_FORMAT);
-        }
-    }
-
     @Unique
     public void derendered$renderVBOSingle(VertexBufferWriter writer, Camera renderInfo, float partialTicks) {
         Quaternionf quaternion = renderInfo.rotation();
@@ -141,5 +111,28 @@ public abstract class TextureSheetParticleMixin extends SingleQuadParticle imple
 
             writer.push(stack, buffer, 4, InstancedParticleVertex.VBO_FORMAT);
         }
+    }
+
+    /// [SingleQuadParticle#render(VertexConsumer,Camera,float)]
+    @Unique
+    @Override
+    public final void derendered$writeInstanceFast(VertexBufferWriter writer, long buffPtr, ParticleRenderType renderType, Vec3 camPos, float partialTicks) {
+        float x = (float)(Mth.lerp(partialTicks, this.xo, this.x) - camPos.x());
+        float y = (float)(Mth.lerp(partialTicks, this.yo, this.y) - camPos.y());
+        float z = (float)(Mth.lerp(partialTicks, this.zo, this.z) - camPos.z());
+
+        int color = ColorABGR.pack(this.rCol , this.gCol, this.bCol, this.alpha);
+
+        float size = this.getQuadSize(partialTicks);
+        float angle = Mth.lerp(partialTicks, this.oRoll, this.roll);
+
+        InstancedParticleVertex.putInstance(
+                buffPtr, x, y, z, color,
+                (short) (TextureAtlasSpriteUtil.getSpriteU(sprite, getU0()) * 65535f),
+                (short) (TextureAtlasSpriteUtil.getSpriteV(sprite, getV0()) * 65535f),
+                (short) (TextureAtlasSpriteUtil.getSpriteU(sprite, getU1()) * 65535f),
+                (short) (TextureAtlasSpriteUtil.getSpriteV(sprite, getV1()) * 65535f),
+                size, (byte) (angle * 255f)
+        );
     }
 }

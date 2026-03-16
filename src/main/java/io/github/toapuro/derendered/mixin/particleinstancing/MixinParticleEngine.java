@@ -45,6 +45,9 @@ public class MixinParticleEngine {
     private final InstancedBufferStack derendered$instancedBuffer = new InstancedBufferStack(Tesselator.getInstance().getBuilder());
 
     @Unique
+    private final InstancedParticleEngine derendered$instancedParticleEngine = new InstancedParticleEngine();
+
+    @Unique
     private static @NotNull Map<Integer, List<IInstancedParticle>> derendered$fallbackSmallBatches(Map<Integer, List<IInstancedParticle>> preBatchMap, int minimumBatchSize, Consumer<List<Particle>> listFallback) {
         Map<Integer, List<IInstancedParticle>> batchMap = new HashMap<>();
         preBatchMap.forEach((hash, batchParticles) -> {
@@ -99,7 +102,7 @@ public class MixinParticleEngine {
 
         // Rendering
         for (List<IInstancedParticle> batchParticles : batchMap.values()) {
-            RenderResult result = InstancedParticleEngine.renderInstancing(batchParticles, bufferbuilder, derendered$instancedBuffer, particleRenderType, activeRenderInfo, textureManager, partialTicks);
+            RenderResult result = derendered$instancedParticleEngine.renderInstancing(batchParticles, bufferbuilder, derendered$instancedBuffer, particleRenderType, activeRenderInfo, textureManager, partialTicks);
 
             if(result.failure()) {
                 // Fail once, fail all

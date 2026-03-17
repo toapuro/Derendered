@@ -25,4 +25,9 @@ public class ModConfig implements ConfigData {
     public static ModConfig get() {
         return LOADER.getConfigHolder().get();
     }
+
+    public void initialize() {
+        this.preload.initialize();
+        this.runtime.initialize();
+    }
 }

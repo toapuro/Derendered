@@ -1,6 +1,7 @@
 package io.github.toapuro.derendered.api.config.category;
 
 import io.github.toapuro.derendered.api.config.PreloadOption;
+import io.github.toapuro.derendered.api.config.RuntimeOption;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,9 +12,12 @@ public class PreloadConfig extends OptionFlagsConfigData<PreloadOption> {
 
     public PreloadConfig() {
         this.enabled = new HashMap<>();
+        initialize();
+    }
 
-        for (PreloadOption option : PreloadOption.OPTIONS) {
-            enabled.put(option.getId(), option.isDefaultEnabled());
+    public void initialize() {
+        for (RuntimeOption option : RuntimeOption.OPTIONS) {
+            enabled.putIfAbsent(option.getId(), option.isDefaultEnabled());
         }
     }
 

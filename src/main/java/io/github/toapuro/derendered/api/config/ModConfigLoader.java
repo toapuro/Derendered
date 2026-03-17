@@ -27,6 +27,8 @@ public class ModConfigLoader {
         GuiRegistry guiRegistry = AutoConfig.getGuiRegistry(ModConfig.class);
         guiRegistry.registerTypeProvider(new OptionFlagsGuiProvider(), Map.class);
 
-        return AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
+        ConfigHolder<ModConfig> holder = AutoConfig.register(ModConfig.class, Toml4jConfigSerializer::new);
+        holder.get().initialize();
+        return holder;
     }
 }

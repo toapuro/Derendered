@@ -13,9 +13,12 @@ public class RuntimeConfig extends OptionFlagsConfigData<RuntimeOption> {
 
     public RuntimeConfig() {
         this.enabled = new HashMap<>();
+        initialize();
+    }
 
+    public void initialize() {
         for (RuntimeOption option : RuntimeOption.OPTIONS) {
-            enabled.put(option.getId(), option.isDefaultEnabled());
+            enabled.putIfAbsent(option.getId(), option.isDefaultEnabled());
         }
     }
 

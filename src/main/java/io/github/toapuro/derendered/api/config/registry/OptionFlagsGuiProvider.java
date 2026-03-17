@@ -30,8 +30,7 @@ public class OptionFlagsGuiProvider implements GuiProvider {
                 throw new IllegalStateException("Value " + value.toString() + " is not boolean");
             }
 
-
-            BooleanToggleBuilder toggleBuilder = new BooleanToggleBuilder(ComponentConstant.resetButtonKey, Component.translatable(i18n), bool);
+            BooleanToggleBuilder toggleBuilder = new BooleanToggleBuilder(ComponentConstant.resetButtonKey, Component.translatable(i18n + "." + key.toString()), bool);
             toggleBuilder.setSaveConsumer(newValue -> map.put(key.toString(), newValue));
 
             if(config instanceof IOptionFlagsValidator validator) {

@@ -8,13 +8,12 @@ import net.minecraft.network.chat.MutableComponent;
 
 @Getter
 public enum DerenderedLang {
-    CONFIG_TITLE("title", "config"),
-    PRELOAD_TITLE("title", "config.category.preload"),
-
     // Preload Config
+
+    // Runtime Config
     PARTICLE_INSTANCING("title", "config.particle_instancing"),
 
-    ;
+    INVALID_FOR_SHADER("error", "invalid_for_shader");
 
     private final String key;
 

@@ -6,9 +6,13 @@
   "refmap": "derendered.refmap.json",
   "plugin": "io.github.toapuro.derendered.api.mixin.MixinPlugin",
   "mixins": [
+    "particleinstancing.MixinParticleEngine",
+    "sodium.CommonVertexAttributeAccessor",
+    "sodium.MixinCommonVertexAttribute"
   ],
   "client": [
-    "MinecraftMixin"
+    "particleinstancing.MixinTextureSheetParticle",
+    "particleinstancing.MixinVertexBuffer"
   ],
   "injectors": {
     "defaultRequire": 1

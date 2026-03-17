@@ -16,7 +16,7 @@ plugins {
 object ModConfig {
     const val MOD_ID = "derendered"
     const val MOD_NAME = "Derendered"
-    const val MOD_LICENSE = "MIT"
+    const val MOD_LICENSE = "LGPL"
     const val MOD_VERSION = "0.1.0"
     const val MOD_GROUP_ID = "io.github.toapuro.derendered"
     const val MOD_AUTHORS = "toapuro"
@@ -48,7 +48,7 @@ sourceSets {
 minecraft {
     mappings("parchment", libs.versions.parchment)
     copyIdeResources.set(true)
-//    accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
+    accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
     runs.configureEach {
         workingDirectory(project.file("run"))
@@ -67,6 +67,8 @@ minecraft {
         create("client") {
             property("forge.enabledGameTestNamespaces", ModConfig.MOD_ID)
             jvmArgs("-XX:+AllowEnhancedClassRedefinition")
+
+            property("mixin.env.compatLevel", "JAVA_17")
         }
 
         create("server") {
@@ -150,11 +152,11 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-//    // Mixin Extras
-//    compileOnly(annotationProcessor(libs.mixinExtrasCommon.get())!!)
-//    implementation(jarJar(libs.mixinExtrasForge.get())) {
-//        jarJar.ranged(this, libs.versions.mixinExtrasRange)
-//    }
+//    Mixin Extras
+    compileOnly(annotationProcessor(libs.mixinExtrasCommon.get())!!)
+    implementation(jarJar(libs.mixinExtrasForge.get())) {
+        jarJar.ranged(this, libs.versions.mixinExtrasRange)
+    }
 
     // Default Dependencies
     runtimeOnly(fg.deobf(deps.catalogue))
@@ -164,7 +166,11 @@ dependencies {
     runtimeOnly(fg.deobf(deps.jeiIntegration))
 
     // Mod Dependencies
-    implementation(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
+    implementation(fg.deobf(deps.clothConfig))
+
+    // Optional Dependencies
+    implementation(fg.deobf(deps.oculus))
+    implementation(fg.deobf("curse.maven:embeddium-908741:5681725"))
 }
 
 tasks.test {
@@ -183,6 +189,8 @@ tasks.named<ProcessResources>("processResources") {
         "forge_version" to libs.versions.forge.get(),
         "forge_version_range" to libs.versions.forgeRange.get(),
         "loader_version_range" to libs.versions.loaderRange.get(),
+
+        "oculus_version_range" to deps.versions.oculusRange.get(),
 
         "mod_id" to ModConfig.MOD_ID,
         "mod_name" to ModConfig.MOD_NAME,

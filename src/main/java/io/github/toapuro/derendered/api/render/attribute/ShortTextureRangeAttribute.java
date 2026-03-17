@@ -2,7 +2,7 @@ package io.github.toapuro.derendered.api.render.attribute;
 
 import org.lwjgl.system.MemoryUtil;
 
-public class ShortTextureRangeAttribute {
+public final class ShortTextureRangeAttribute {
 
     @SuppressWarnings("PointlessArithmeticExpression")
     public static void put(long ptr, short u0, short v0, short u1, short v1) {

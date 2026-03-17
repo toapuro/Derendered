@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 
 @RequiredArgsConstructor
 @Getter
-public class GpuBuffer {
+public final class GpuBuffer {
 
     private final int bufferId = GlStateManager._glGenBuffers();
     private final Usage usage;

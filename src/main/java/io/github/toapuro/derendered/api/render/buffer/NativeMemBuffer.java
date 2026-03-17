@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.lwjgl.system.MemoryUtil;
 
 @AllArgsConstructor
-public class NativeMemBuffer {
+public final class NativeMemBuffer {
 
     @Getter
     private final long size;

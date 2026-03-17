@@ -2,7 +2,7 @@ package io.github.toapuro.derendered.api.render.attribute;
 
 import org.lwjgl.system.MemoryUtil;
 
-public class ByteTextureAttribute {
+public final class ByteTextureAttribute {
 
     @SuppressWarnings("PointlessArithmeticExpression")
     public static void put(long ptr, byte u, byte v) {

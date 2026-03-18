@@ -11,6 +11,7 @@
     "sodium.MixinCommonVertexAttribute"
   ],
   "client": [
+    "morebatching.MixinBufferSource",
     "particleinstancing.MixinTextureSheetParticle",
     "particleinstancing.MixinVertexBuffer"
   ],

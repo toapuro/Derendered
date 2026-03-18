@@ -15,7 +15,8 @@ public enum RuntimeOption implements IConfigOption {
                     ErrorResult.forceFalse(DerenderedLang.INVALID_FOR_SHADER.asComponent())
                     : ErrorResult.keep(null))
             .flagModifier(flag -> flag && !OculusCompat.isShaderEnabledSafe())
-            .build());
+            .build()),
+    MORE_RENDERTYPE_BATCHING("rendertype_batching", true, OptionProperties.builder().build());
 
     public static final RuntimeOption[] OPTIONS = values();
 

@@ -7,12 +7,15 @@
   "plugin": "io.github.toapuro.derendered.api.mixin.MixinPlugin",
   "mixins": [
     "particleinstancing.MixinParticleEngine",
+    "queryculling.MixinBlockEntity",
     "sodium.CommonVertexAttributeAccessor",
     "sodium.MixinCommonVertexAttribute"
   ],
   "client": [
     "particleinstancing.MixinTextureSheetParticle",
-    "particleinstancing.MixinVertexBuffer"
+    "particleinstancing.MixinVertexBuffer",
+    "queryculling.MixinBlockEntityRenderDispatcher",
+    "queryculling.MixinBufferUploader"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -4,11 +4,9 @@ import io.github.toapuro.derendered.api.render.instancing.particle.ParticleVerte
 import io.github.toapuro.derendered.libs.embeddium.CommonVertexAttributesExt;
 import net.caffeinemc.mods.sodium.api.vertex.attributes.CommonVertexAttribute;
 import org.apache.commons.lang3.ArrayUtils;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
+@Pseudo
 @Mixin(value = CommonVertexAttribute.class, remap = false)
 public class MixinCommonVertexAttribute {
     @Mutable

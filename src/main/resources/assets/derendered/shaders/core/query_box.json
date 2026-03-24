@@ -1,0 +1,15 @@
+{
+  "vertex": "derendered:query_box",
+  "fragment": "derendered:query_box",
+  "attributes": [
+  ],
+  "samplers": [
+  ],
+  "uniforms": [
+    { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+    { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+    { "name": "BoxMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+    { "name": "BoxOffset", "type": "float", "count": 3, "values": [ 0.0, 0.0, 0.0 ] },
+    { "name": "BoxScale", "type": "float", "count": 3, "values": [ 1.0, 1.0, 1.0 ] }
+  ]
+}
